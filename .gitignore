@@ -1,3 +1,26 @@
+
+# Исполняемые файлы
+*.exe
+
+# Файлы сборки
+build/
+bin/
+
+# Файлы IDE
+.vscode/
+*.iml
+*.user
+
+# Файлы ОС
+*.DS_Store
+.Thumbs.db
+
+# Временные файлы
+*.tmp
+*.log
+
+# Зависимости
+vcpkg_installed/
 # Prerequisites
 *.d
 
