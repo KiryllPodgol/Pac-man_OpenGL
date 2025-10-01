@@ -1,0 +1,20 @@
+﻿  main.cpp
+D:\repos\Pacman\Pacman\gameMap.h(18,29): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  (compiling source file 'main.cpp')
+  
+D:\repos\Pacman\Pacman\pacman.h(34,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'main.cpp')
+  
+D:\repos\Pacman\Pacman\pacman.h(34,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'main.cpp')
+  
+D:\repos\Pacman\Pacman\pacman.h(55,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'main.cpp')
+  
+D:\repos\Pacman\Pacman\pacman.h(55,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'main.cpp')
+  
+D:\repos\Pacman\Pacman\main.cpp(24,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Pacman\Pacman\main.cpp(55,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\repos\Pacman\Pacman\main.cpp(56,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+  Pacman.vcxproj -> D:\repos\Pacman\x64\Debug\Pacman.exe
