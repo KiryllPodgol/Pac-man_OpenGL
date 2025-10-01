@@ -41,17 +41,43 @@ public:
             grid[height - 1][j].type = WALL;
         }
 
-        // Простые внутренние препятствия для примера
-        if (width > 5 && height > 5) {
-            grid[height / 2][3].type = WALL;
-            grid[height / 2][4].type = WALL;
-            grid[height / 2][5].type = WALL;
-            grid[height / 2][width - 4].type = WALL;
-            grid[height / 2][width - 5].type = WALL;
-            grid[height / 2][width - 6].type = WALL;
-        }
-    }
+       
+       
+        //// дом призраков
+      
 
+
+        grid[9][5].type = WALL;
+        grid[9][6].type = WALL;
+        grid[9][7].type = WALL;
+        grid[9][8].type = WALL;
+        grid[9][9].type = WALL;
+        grid[9][10].type = WALL;
+        grid[9][11].type = WALL;
+        grid[9][12].type = WALL;
+        grid[9][13].type = WALL;
+        grid[10][5].type = WALL;
+        grid[11][5].type = WALL;
+        grid[12][5].type = WALL;
+        grid[13][5].type = WALL;
+        grid[14][5].type = WALL;
+        grid[15][5].type = WALL;
+        grid[15][6].type = WALL;
+        grid[15][7].type = WALL;
+        grid[10][13].type = WALL;
+        grid[11][13].type = WALL;
+        grid[12][13].type = WALL;
+        grid[13][13].type = WALL;
+        grid[14][13].type = WALL;
+        grid[15][13].type = WALL;
+        grid[15][12].type = WALL;
+        grid[15][11].type = WALL;
+
+
+
+
+
+    }
     void createCoins() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {

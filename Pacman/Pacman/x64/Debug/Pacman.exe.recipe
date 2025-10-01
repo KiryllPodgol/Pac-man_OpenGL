@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\repos\Pacman\x64\Debug\Pacman.exe</FullPath>
+      <FullPath>D:\remote git\Pac-man_OpenGL\Pacman\x64\Debug\Pacman.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

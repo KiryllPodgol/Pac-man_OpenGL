@@ -23,7 +23,7 @@ private:
 public:
     Game(int width, int height) :
         map(width, height),
-        pacman(width / 2.0f, height / 2.0f),
+        pacman(width / 2.0f, 1.0f),
         level(1),
         score(0),
         highScore(0),
@@ -74,7 +74,7 @@ public:
                     gameOver = true;
                 }
 
-                pacman.resetPosition(map.getWidth() / 2.0f, map.getHeight() / 2.0f);
+                pacman.resetPosition(map.getWidth() / 2.0f, map.getHeight() / 1.0f);
                 initializeGhosts();
                 break;
             }
