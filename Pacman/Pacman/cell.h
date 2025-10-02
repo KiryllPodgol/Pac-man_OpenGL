@@ -5,7 +5,7 @@ enum CellType {
     EMPTY,
     WALL,
     COIN,
-    WHITEPOINT  
+    POWER_POINT  
 };
 
 class Cell {
@@ -16,7 +16,7 @@ public:
     Cell(int x = 0, int y = 0, CellType type = EMPTY) : x(x), y(y), type(type) {}
 
     bool isWalkable() const {
-        return type == EMPTY || type == COIN || type == WHITEPOINT;
+        return type == EMPTY || type == COIN || type == POWER_POINT;
     }
 };
 

@@ -19,6 +19,10 @@ private:
     bool gameOver;
     bool levelComplete;
     bool gameStarted;
+    bool powerMode;
+    int powerModeTimer;
+    bool ghostsVulnerable; 
+    int flashTimer; 
 
 public:
     Game(int width, int height) :
@@ -29,7 +33,11 @@ public:
         highScore(0),
         gameOver(false),
         levelComplete(false),
-        gameStarted(false)
+        gameStarted(false),
+        powerMode(false),
+        powerModeTimer(0),
+        ghostsVulnerable(false),
+        flashTimer(0)
     {
         initializeGhosts();
     }
@@ -39,10 +47,9 @@ public:
         int mapWidth = map.getWidth();
         int mapHeight = map.getHeight();
 
-        // Ставим призраков в верхних углах и в центре вверху
-        ghosts.push_back(Ghost(1.0f, mapHeight - 2.0f));                     // Верхний левый
-        ghosts.push_back(Ghost(mapWidth - 2.0f, mapHeight - 2.0f));          // Верхний правый
-        ghosts.push_back(Ghost(mapWidth / 2.0f, mapHeight - 2.0f));          // Верхний центр
+        ghosts.push_back(Ghost(1.0f, mapHeight - 2.0f));
+        ghosts.push_back(Ghost(mapWidth - 2.0f, mapHeight - 2.0f));
+        ghosts.push_back(Ghost(mapWidth / 2.0f, mapHeight - 2.0f));
     }
 
     void startGame() {
@@ -54,8 +61,25 @@ public:
     void update() {
         if (gameOver || levelComplete || !gameStarted) return;
 
+      
+        if (powerMode) {
+            powerModeTimer--;
+            flashTimer++;
+
+            
+            if (flashTimer >= 10) {
+                flashTimer = 0;
+            }
+
+            if (powerModeTimer <= 0) {
+                powerMode = false;
+                ghostsVulnerable = false;
+            }
+        }
+
         pacman.update(map);
         checkCoinCollection();
+        checkPowerPointCollection();
 
         for (auto& ghost : ghosts) {
             ghost.update(map, pacman);
@@ -66,16 +90,28 @@ public:
     }
 
     void checkCollisions() {
-        for (const auto& ghost : ghosts) {
+        for (auto& ghost : ghosts) {
             if (static_cast<int>(pacman.getX()) == static_cast<int>(ghost.getX()) &&
                 static_cast<int>(pacman.getY()) == static_cast<int>(ghost.getY())) {
-                pacman.die();
-                if (!pacman.isAlive()) {
-                    gameOver = true;
-                }
 
-                pacman.resetPosition(map.getWidth() / 2.0f, map.getHeight() / 1.0f);
-                initializeGhosts();
+                if (ghostsVulnerable && ghost.isVulnerable()) {
+                    // Пакман ест призрака
+                    ghost.setVulnerable(false);
+                    ghost.respawn(map.getWidth(), map.getHeight());
+                    score += 200;
+                    highScore = std::max(score, highScore);
+                }
+                else if (!ghostsVulnerable) {
+                    // Обычный режим - Пакман умирает
+                    pacman.die();
+                    if (!pacman.isAlive()) {
+                        gameOver = true;
+                    }
+                    pacman.resetPosition(map.getWidth() / 2.0f, 1.0f);
+                    initializeGhosts();
+                    powerMode = false;
+                    ghostsVulnerable = false;
+                }
                 break;
             }
         }
@@ -89,6 +125,30 @@ public:
             map.collectCoin(pacmanX, pacmanY);
             score += 10;
             highScore = std::max(score, highScore);
+        }
+    }
+
+    void checkPowerPointCollection() {
+        int pacmanX = static_cast<int>(pacman.getX() + 0.5f);
+        int pacmanY = static_cast<int>(pacman.getY() + 0.5f);
+
+        if (map.hasPowerPoint(pacmanX, pacmanY)) {
+            map.collectCoin(pacmanX, pacmanY);
+            score += 50;
+            highScore = std::max(score, highScore);
+            activatePowerMode();
+        }
+    }
+
+    void activatePowerMode() {
+        powerMode = true;
+        powerModeTimer = 300; // 300 кадров = ~10 секунд
+        ghostsVulnerable = true;
+        flashTimer = 0;
+
+        // Делаем всех призраков уязвимыми
+        for (auto& ghost : ghosts) {
+            ghost.setVulnerable(true);
         }
     }
 
@@ -108,6 +168,9 @@ public:
         level++;
         levelComplete = false;
         gameStarted = false;
+        powerMode = false;
+        powerModeTimer = 0;
+        ghostsVulnerable = false;
         map.initializeClassicMap();
         pacman.resetPosition(map.getWidth() / 2.0f, 1.0f);
         initializeGhosts();
@@ -120,6 +183,9 @@ public:
         gameOver = false;
         levelComplete = false;
         gameStarted = false;
+        powerMode = false;
+        powerModeTimer = 0;
+        ghostsVulnerable = false;
         map.initializeClassicMap();
         pacman.resetPosition(map.getWidth() / 2.0f, 1.0f);
         initializeGhosts();
@@ -136,6 +202,9 @@ public:
     bool isGameOver() const { return gameOver; }
     bool isLevelComplete() const { return levelComplete; }
     bool isGameStarted() const { return gameStarted; }
+    bool isPowerMode() const { return powerMode; }
+    bool areGhostsVulnerable() const { return ghostsVulnerable; }
+    int getFlashTimer() const { return flashTimer; }
 };
 
 #endif

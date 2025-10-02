@@ -18,9 +18,9 @@ public:
         std::srand(std::time(0));
         initializeClassicMap();
     }
-
+   
     void initializeClassicMap() {
-        // Очищаем карту
+        
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 grid[i][j] = Cell(j, i, EMPTY);
@@ -28,6 +28,7 @@ public:
         }
         createClassicWalls();
         createCoins();
+        createPowerPoints(); 
     }
 
     void createClassicWalls() {
@@ -41,43 +42,36 @@ public:
             grid[height - 1][j].type = WALL;
         }
 
-       
-       
-        //// дом призраков
-      
+        // Простая классическая карта Pac-Man
+        // Вертикальные стены
+        for (int i = 1; i <= 5; i++) {
+            grid[i][3].type = WALL;
+            grid[i][width - 4].type = WALL;
+        }
 
+        for (int i = height - 6; i <= height - 2; i++) {
+            grid[i][3].type = WALL;
+            grid[i][width - 4].type = WALL;
+        }
 
-        grid[9][5].type = WALL;
-        grid[9][6].type = WALL;
-        grid[9][7].type = WALL;
-        grid[9][8].type = WALL;
-        grid[9][9].type = WALL;
-        grid[9][10].type = WALL;
-        grid[9][11].type = WALL;
-        grid[9][12].type = WALL;
-        grid[9][13].type = WALL;
-        grid[10][5].type = WALL;
-        grid[11][5].type = WALL;
-        grid[12][5].type = WALL;
-        grid[13][5].type = WALL;
-        grid[14][5].type = WALL;
-        grid[15][5].type = WALL;
-        grid[15][6].type = WALL;
-        grid[15][7].type = WALL;
-        grid[10][13].type = WALL;
-        grid[11][13].type = WALL;
-        grid[12][13].type = WALL;
-        grid[13][13].type = WALL;
-        grid[14][13].type = WALL;
-        grid[15][13].type = WALL;
-        grid[15][12].type = WALL;
-        grid[15][11].type = WALL;
+        // Угловые блоки
+        grid[5][5].type = WALL;
+        grid[5][6].type = WALL;
+        grid[6][5].type = WALL;
 
+        grid[5][width - 6].type = WALL;
+        grid[5][width - 7].type = WALL;
+        grid[6][width - 6].type = WALL;
 
+        grid[height - 6][5].type = WALL;
+        grid[height - 6][6].type = WALL;
+        grid[height - 7][5].type = WALL;
 
-
-
+        grid[height - 6][width - 6].type = WALL;
+        grid[height - 6][width - 7].type = WALL;
+        grid[height - 7][width - 6].type = WALL;
     }
+
     void createCoins() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -86,6 +80,14 @@ public:
                 }
             }
         }
+    }
+
+    void createPowerPoints() {
+        // Размещаем POWER_POINT в четырех углах карты (как в оригинальном Pac-Man)
+        grid[1][1].type = POWER_POINT;                    // Левый верхний угол
+        grid[1][width - 2].type = POWER_POINT;            // Правый верхний угол
+        grid[height - 2][1].type = POWER_POINT;           // Левый нижний угол
+        grid[height - 2][width - 2].type = POWER_POINT;   // Правый нижний угол
     }
 
     bool canMove(float fx, float fy) const {
@@ -98,8 +100,10 @@ public:
     }
 
     void collectCoin(int x, int y) {
-        if (x >= 0 && x < width && y >= 0 && y < height && grid[y][x].type == COIN) {
-            grid[y][x].type = EMPTY;
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            if (grid[y][x].type == COIN || grid[y][x].type == POWER_POINT) {
+                grid[y][x].type = EMPTY;
+            }
         }
     }
 
@@ -108,6 +112,13 @@ public:
             return false;
         }
         return grid[y][x].type == COIN;
+    }
+
+    bool hasPowerPoint(int x, int y) const {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return false;
+        }
+        return grid[y][x].type == POWER_POINT;
     }
 
     int getWidth() const { return width; }
@@ -121,7 +132,7 @@ public:
         int count = 0;
         for (const auto& row : grid) {
             for (const auto& cell : row) {
-                if (cell.type == COIN) count++;
+                if (cell.type == COIN || cell.type == POWER_POINT) count++;
             }
         }
         return count;

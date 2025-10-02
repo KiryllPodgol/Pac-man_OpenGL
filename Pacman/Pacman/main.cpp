@@ -64,12 +64,15 @@ void display() {
                 glColor3f(1.0f, 1.0f, 0.0f);
                 drawCircle(x + CELL_SIZE / 2.0f, y + CELL_SIZE / 2.0f, 3, 12);
                 break;
+            case POWER_POINT:
+                glColor3f(1.0f, 1.0f, 1.0f);
+                drawCircle(x + CELL_SIZE / 2.0f, y + CELL_SIZE / 2.0f, 6, 16); // Больший размер
+                break;
             case EMPTY:
                 break;
             }
         }
     }
-
     // Отрисовка Пакмана
     const auto& pacman = game.getPacman();
     glColor3f(1.0f, 1.0f, 0.0f);
@@ -79,7 +82,19 @@ void display() {
 
     // Отрисовка призраков
     for (const auto& ghost : game.getGhosts()) {
-        glColor3f(1.0f, 0.0f, 0.0f);
+        if (game.areGhostsVulnerable() && ghost.isVulnerable()) {
+            // Мигание синим и белым в уязвимом режиме
+            if (game.getFlashTimer() < 5) {
+                glColor3f(0.0f, 0.0f, 1.0f);
+            }
+            else {
+                glColor3f(1.0f, 1.0f, 1.0f); // Белый
+            }
+        }
+        else {
+            glColor3f(1.0f, 0.0f, 0.0f); 
+        }
+
         drawCircle(ghost.getX() * CELL_SIZE + CELL_SIZE / 2.0f,
             ghost.getY() * CELL_SIZE + CELL_SIZE / 2.0f,
             CELL_SIZE / 2.5f, 16);

@@ -151,7 +151,6 @@
     <ClInclude Include="gameMap.h" />
     <ClInclude Include="ghost.h" />
     <ClInclude Include="pacman.h" />
-    <ClInclude Include="WhitePoint.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

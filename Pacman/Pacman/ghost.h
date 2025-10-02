@@ -13,6 +13,8 @@ private:
     float speed;
     int dx, dy; // Текущее направление движения
     float visionRadius; // Дальность "зрения" призрака
+    bool vulnerable; // Уязвим ли призрак
+    float respawnX, respawnY; // Позиция возрождения
 
     // Движение в погоне за Пакманом
     void chasePacman(const GameMap& map, const Pacman& pacman) {
@@ -41,23 +43,57 @@ private:
         }
         // Если выбранное направление заблокировано, продолжаем текущее или ищем альтернативу
         else if (!map.canMove(x + dx, y + dy)) {
-            // Ищем любое доступное направление
-            std::vector<std::pair<int, int>> possibleMoves;
-            if (map.canMove(x + 1, y)) possibleMoves.push_back({ 1, 0 });
-            if (map.canMove(x - 1, y)) possibleMoves.push_back({ -1, 0 });
-            if (map.canMove(x, y + 1)) possibleMoves.push_back({ 0, 1 });
-            if (map.canMove(x, y - 1)) possibleMoves.push_back({ 0, -1 });
+            findAlternativeDirection(map);
+        }
+    }
 
-            if (!possibleMoves.empty()) {
-                auto move = possibleMoves[rand() % possibleMoves.size()];
-                dx = move.first;
-                dy = move.second;
-            }
-            else {
-                // Если нет доступных ходов, останавливаемся
-                dx = 0;
-                dy = 0;
-            }
+    // Бегство от Пакмана (в уязвимом режиме)
+    void fleeFromPacman(const GameMap& map, const Pacman& pacman) {
+        float pacmanX = pacman.getX();
+        float pacmanY = pacman.getY();
+
+        int flee_dx = 0;
+        int flee_dy = 0;
+
+        // Выбираем направление противоположное Пакману
+        if (std::abs(pacmanX - x) > std::abs(pacmanY - y)) {
+            flee_dx = (pacmanX > x) ? -1 : 1;
+        }
+        else {
+            flee_dy = (pacmanY > y) ? -1 : 1;
+        }
+
+        // Пытаемся двигаться в направлении бегства
+        if (flee_dx != 0 && map.canMove(x + flee_dx, y)) {
+            dx = flee_dx;
+            dy = 0;
+        }
+        else if (flee_dy != 0 && map.canMove(x, y + flee_dy)) {
+            dx = 0;
+            dy = flee_dy;
+        }
+        // Если направление бегства заблокировано, ищем альтернативу
+        else if (!map.canMove(x + dx, y + dy)) {
+            findAlternativeDirection(map);
+        }
+    }
+
+    // Поиск альтернативного направления
+    void findAlternativeDirection(const GameMap& map) {
+        std::vector<std::pair<int, int>> possibleMoves;
+        if (map.canMove(x + 1, y)) possibleMoves.push_back({ 1, 0 });
+        if (map.canMove(x - 1, y)) possibleMoves.push_back({ -1, 0 });
+        if (map.canMove(x, y + 1)) possibleMoves.push_back({ 0, 1 });
+        if (map.canMove(x, y - 1)) possibleMoves.push_back({ 0, -1 });
+
+        if (!possibleMoves.empty()) {
+            auto move = possibleMoves[rand() % possibleMoves.size()];
+            dx = move.first;
+            dy = move.second;
+        }
+        else {
+            dx = 0;
+            dy = 0;
         }
     }
 
@@ -65,29 +101,14 @@ private:
     void randomMove(const GameMap& map) {
         // Если уперлись в стену или стоим на месте, ищем новый путь
         if (!map.canMove(x + dx, y + dy) || (dx == 0 && dy == 0)) {
-            std::vector<std::pair<int, int>> possibleMoves;
-            if (map.canMove(x + 1, y)) possibleMoves.push_back({ 1, 0 });
-            if (map.canMove(x - 1, y)) possibleMoves.push_back({ -1, 0 });
-            if (map.canMove(x, y + 1)) possibleMoves.push_back({ 0, 1 });
-            if (map.canMove(x, y - 1)) possibleMoves.push_back({ 0, -1 });
-
-            if (!possibleMoves.empty()) {
-                // Выбираем случайное направление из доступных
-                auto move = possibleMoves[rand() % possibleMoves.size()];
-                dx = move.first;
-                dy = move.second;
-            }
-            else {
-                // Если нет доступных ходов, останавливаемся
-                dx = 0;
-                dy = 0;
-            }
+            findAlternativeDirection(map);
         }
     }
 
 public:
     Ghost(float startX = 0, float startY = 0)
-        : x(startX), y(startY), speed(0.07f), dx(0), dy(0), visionRadius(8.0f) {
+        : x(startX), y(startY), speed(0.07f), dx(0), dy(0), visionRadius(8.0f),
+        vulnerable(false), respawnX(startX), respawnY(startY) {
     }
 
     void update(const GameMap& map, const Pacman& pacman) {
@@ -105,14 +126,26 @@ public:
             canSeePacman = true;
         }
 
-        if (canSeePacman) {
-            chasePacman(map, pacman);
+        if (vulnerable) {
+            // В уязвимом режиме призрак убегает от Пакмана
+            if (canSeePacman) {
+                fleeFromPacman(map, pacman);
+            }
+            else {
+                randomMove(map);
+            }
         }
         else {
-            randomMove(map);
+            // Обычный режим
+            if (canSeePacman) {
+                chasePacman(map, pacman);
+            }
+            else {
+                randomMove(map);
+            }
         }
 
-        // ГЛАВНОЕ ИСПРАВЛЕНИЕ: Проверяем стену перед каждым движением
+        // Проверяем стену перед каждым движением
         float newX = x + dx * speed;
         float newY = y + dy * speed;
 
@@ -129,15 +162,39 @@ public:
         }
     }
 
+    // Установка уязвимости
+    void setVulnerable(bool isVulnerable) {
+        vulnerable = isVulnerable;
+    }
+
+    bool isVulnerable() const {
+        return vulnerable;
+    }
+
+    // Возрождение призрака после съедения
+    void respawn(int mapWidth, int mapHeight) {
+        x = respawnX;
+        y = respawnY;
+        dx = 0;
+        dy = 0;
+        vulnerable = false;
+    }
+
     float getX() const { return x; }
     float getY() const { return y; }
 
-    // Добавим метод для сброса позиции (полезно для game.h)
+    // Добавим метод для сброса позиции
     void resetPosition(float newX, float newY) {
         x = newX;
         y = newY;
         dx = 0;
         dy = 0;
+        vulnerable = false;
+    }
+
+    // Установка скорости (для разных уровней сложности)
+    void setSpeed(float newSpeed) {
+        speed = newSpeed;
     }
 };
 
