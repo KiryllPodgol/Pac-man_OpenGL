@@ -7,6 +7,8 @@
 #include <vector>
 #include <ctime>
 #include <algorithm>
+#include <cmath>
+#include <iostream>
 
 class Game {
 private:
@@ -21,8 +23,8 @@ private:
     bool gameStarted;
     bool powerMode;
     int powerModeTimer;
-    bool ghostsVulnerable; 
-    int flashTimer; 
+    bool ghostsVulnerable;
+    int flashTimer;
 
 public:
     Game(int width, int height) :
@@ -47,9 +49,17 @@ public:
         int mapWidth = map.getWidth();
         int mapHeight = map.getHeight();
 
-        ghosts.push_back(Ghost(1.0f, mapHeight - 2.0f));
-        ghosts.push_back(Ghost(mapWidth - 2.0f, mapHeight - 2.0f));
-        ghosts.push_back(Ghost(mapWidth / 2.0f, mapHeight - 2.0f));
+        // Размещаем призраков в разных стартовых позициях
+        ghosts.push_back(Ghost(9.0f, 10.0f, RED));    // Blinky - центр
+        ghosts.push_back(Ghost(8.0f, 10.0f, PINK));   // Pinky  
+        ghosts.push_back(Ghost(10.0f, 10.0f, CYAN));  // Inky
+        ghosts.push_back(Ghost(9.0f, 9.0f, ORANGE));  // Clyde
+
+        // Даем им начальные направления
+        ghosts[0].setSpeed(0.08f); // Blinky
+        ghosts[1].setSpeed(0.075f); // Pinky  
+        ghosts[2].setSpeed(0.07f); // Inky
+        ghosts[3].setSpeed(0.065f); // Clyde
     }
 
     void startGame() {
@@ -61,12 +71,12 @@ public:
     void update() {
         if (gameOver || levelComplete || !gameStarted) return;
 
-      
+        // Обновляем таймер режима силы и мигания
         if (powerMode) {
             powerModeTimer--;
             flashTimer++;
 
-            
+            // Мигание каждые 10 кадров
             if (flashTimer >= 10) {
                 flashTimer = 0;
             }
@@ -74,6 +84,7 @@ public:
             if (powerModeTimer <= 0) {
                 powerMode = false;
                 ghostsVulnerable = false;
+                std::cout << "POWER MODE ENDED!" << std::endl;
             }
         }
 
@@ -90,25 +101,39 @@ public:
     }
 
     void checkCollisions() {
-        for (auto& ghost : ghosts) {
-            if (static_cast<int>(pacman.getX()) == static_cast<int>(ghost.getX()) &&
-                static_cast<int>(pacman.getY()) == static_cast<int>(ghost.getY())) {
+        float pacmanX = pacman.getX();
+        float pacmanY = pacman.getY();
 
-                if (ghostsVulnerable && ghost.isVulnerable()) {
-                    // Пакман ест призрака
-                    ghost.setVulnerable(false);
+        for (auto& ghost : ghosts) {
+            float ghostX = ghost.getX();
+            float ghostY = ghost.getY();
+
+            // Проверяем столкновение по области
+            float distance = std::sqrt(std::pow(pacmanX - ghostX, 2) + std::pow(pacmanY - ghostY, 2));
+            float collisionRadius = 0.7f;
+
+            if (distance < collisionRadius) {
+                if (ghostsVulnerable) {
+                    // В режиме силы Пакман ест призраков
+                    std::cout << "Pacman ate ghost! Score +200" << std::endl;
                     ghost.respawn(map.getWidth(), map.getHeight());
                     score += 200;
                     highScore = std::max(score, highScore);
                 }
-                else if (!ghostsVulnerable) {
+                else {
                     // Обычный режим - Пакман умирает
+                    std::cout << "Pacman died!" << std::endl;
                     pacman.die();
                     if (!pacman.isAlive()) {
                         gameOver = true;
+                        std::cout << "GAME OVER!" << std::endl;
                     }
                     pacman.resetPosition(map.getWidth() / 2.0f, 1.0f);
-                    initializeGhosts();
+
+                    // Сбрасываем всех призраков
+                    for (auto& g : ghosts) {
+                        g.resetPosition(g.getX(), g.getY());
+                    }
                     powerMode = false;
                     ghostsVulnerable = false;
                 }
@@ -145,6 +170,8 @@ public:
         powerModeTimer = 300; // 300 кадров = ~10 секунд
         ghostsVulnerable = true;
         flashTimer = 0;
+
+        std::cout << "POWER MODE ACTIVATED! Ghosts are vulnerable for 10 seconds." << std::endl;
 
         // Делаем всех призраков уязвимыми
         for (auto& ghost : ghosts) {

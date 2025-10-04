@@ -145,8 +145,7 @@ void display() {
 
     // Отрисовка призраков
     for (const auto& ghost : game.getGhosts()) {
-        if (game.areGhostsVulnerable() && ghost.isVulnerable()) {
-            // Мигание синим и белым в уязвимом режиме
+        if (ghost.isVulnerable()) {
             if (game.getFlashTimer() < 5) {
                 glColor3f(0.0f, 0.0f, 1.0f); // Синий
             }
@@ -155,7 +154,13 @@ void display() {
             }
         }
         else {
-            glColor3f(1.0f, 0.0f, 0.0f); // Красный (обычный)
+            // Разные цвета для призраков
+            switch (ghost.getColor()) {
+            case RED:    glColor3f(1.0f, 0.0f, 0.0f); break;    // Красный
+            case PINK:   glColor3f(1.0f, 0.5f, 0.8f); break;    // Розовый
+            case CYAN:   glColor3f(0.0f, 1.0f, 1.0f); break;    // Голубой
+            case ORANGE: glColor3f(1.0f, 0.5f, 0.0f); break;    // Оранжевый
+            }
         }
 
         drawCircle(ghost.getX() * CELL_SIZE + CELL_SIZE / 2.0f,

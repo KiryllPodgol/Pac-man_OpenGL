@@ -5,197 +5,291 @@
 #include "pacman.h"
 #include <cmath>
 #include <vector>
-#include <cstdlib> // для rand()
+#include <cstdlib>
+#include <algorithm>
+#include <iostream>
+
+enum GhostColor {
+    RED,    // Blinky
+    PINK,   // Pinky
+    CYAN,   // Inky
+    ORANGE  // Clyde
+};
 
 class Ghost {
 private:
     float x, y;
     float speed;
-    int dx, dy; // Текущее направление движения
-    float visionRadius; // Дальность "зрения" призрака
-    bool vulnerable; // Уязвим ли призрак
-    float respawnX, respawnY; // Позиция возрождения
+    int dx, dy;
+    bool vulnerable;
+    float respawnX, respawnY;
+    GhostColor color;
+    int frightenedTimer;
+    int modeTimer;
+    bool inScatterMode;
 
-    // Движение в погоне за Пакманом
-    void chasePacman(const GameMap& map, const Pacman& pacman) {
-        float pacmanX = pacman.getX();
-        float pacmanY = pacman.getY();
+    // Получаем целочисленные координаты текущей клетки
+    int getCurrentTileX() const { return static_cast<int>(std::round(x)); }
+    int getCurrentTileY() const { return static_cast<int>(std::round(y)); }
 
-        int chase_dx = 0;
-        int chase_dy = 0;
+    // Проверяем, находится ли призрак в центре клетки
+    bool isAtIntersection() const {
+        return std::abs(x - getCurrentTileX()) < 0.05f &&
+            std::abs(y - getCurrentTileY()) < 0.05f;
+    }
 
-        // Выбираем направление для погони
-        if (std::abs(pacmanX - x) > std::abs(pacmanY - y)) {
-            chase_dx = (pacmanX > x) ? 1 : -1;
+    // Выравниваем позицию к центру клетки
+    void alignToGrid() {
+        x = getCurrentTileX();
+        y = getCurrentTileY();
+    }
+
+    // Получаем целевую позицию для преследования
+    std::pair<int, int> getChaseTarget(const Pacman& pacman) {
+        int pacmanX = static_cast<int>(std::round(pacman.getX()));
+        int pacmanY = static_cast<int>(std::round(pacman.getY()));
+        int pacmanDx = pacman.getDirectionX();
+        int pacmanDy = pacman.getDirectionY();
+
+        switch (color) {
+        case RED: // Blinky - прямое преследование
+            return { pacmanX, pacmanY };
+
+        case PINK: // Pinky - на 4 клетки впереди Пакмана
+            return { pacmanX + pacmanDx * 4, pacmanY + pacmanDy * 4 };
+
+        case CYAN: // Inky - зеркальная позиция относительно Blinky
+        {
+            // Упрощенная версия - преследование с небольшим смещением
+            return { pacmanX - pacmanDx * 2, pacmanY - pacmanDy * 2 };
+        }
+
+        case ORANGE: // Clyde - преследует на расстоянии, убегает вблизи
+        {
+            float distance = std::sqrt(std::pow(x - pacman.getX(), 2) +
+                std::pow(y - pacman.getY(), 2));
+            if (distance < 8.0f) {
+                return { 1, 1 }; // Убегает в левый нижний угол
+            }
+            else {
+                return { pacmanX, pacmanY };
+            }
+        }
+        }
+        return { pacmanX, pacmanY };
+    }
+
+    // Получаем целевую позицию для режима scatter
+    std::pair<int, int> getScatterTarget() {
+        switch (color) {
+        case RED:    return { 17, 19 }; // Правый верхний
+        case PINK:   return { 1, 19 };  // Левый верхний
+        case CYAN:   return { 17, 1 };  // Правый нижний
+        case ORANGE: return { 1, 1 };   // Левый нижний
+        }
+        return { 1, 1 };
+    }
+
+    // Выбираем лучшее направление движения
+    void chooseBestDirection(const GameMap& map, const Pacman& pacman) {
+        if (!isAtIntersection()) {
+            return; // Меняем направление только на пересечениях
+        }
+
+        alignToGrid();
+
+        std::pair<int, int> target;
+        if (vulnerable) {
+            // В уязвимом режиме - случайное движение
+            chooseRandomDirection(map);
+            return;
+        }
+        else if (inScatterMode) {
+            target = getScatterTarget();
         }
         else {
-            chase_dy = (pacmanY > y) ? 1 : -1;
+            target = getChaseTarget(pacman);
         }
 
-        // Пытаемся двигаться в этом направлении ТОЛЬКО ЕСЛИ ПУТЬ СВОБОДЕН
-        if (chase_dx != 0 && map.canMove(x + chase_dx, y)) {
-            dx = chase_dx;
-            dy = 0;
+        // Все возможные направления
+        std::vector<std::pair<int, int>> directions = {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}
+        };
+
+        std::vector<std::pair<int, int>> validDirections;
+        std::vector<float> distances;
+
+        for (const auto& dir : directions) {
+            int newDx = dir.first;
+            int newDy = dir.second;
+
+            // Пропускаем обратное направление (кроме случаев когда нет выбора)
+            if (newDx == -dx && newDy == -dy) {
+                continue;
+            }
+
+            // Проверяем возможность движения
+            int testX = getCurrentTileX() + newDx;
+            int testY = getCurrentTileY() + newDy;
+
+            if (map.canMove(testX, testY)) {
+                float distance = std::sqrt(std::pow(target.first - testX, 2) +
+                    std::pow(target.second - testY, 2));
+                validDirections.push_back({ newDx, newDy });
+                distances.push_back(distance);
+            }
         }
-        else if (chase_dy != 0 && map.canMove(x, y + chase_dy)) {
-            dx = 0;
-            dy = chase_dy;
+
+        if (!validDirections.empty()) {
+            // Выбираем направление с минимальным расстоянием до цели
+            auto minIt = std::min_element(distances.begin(), distances.end());
+            int bestIndex = std::distance(distances.begin(), minIt);
+            dx = validDirections[bestIndex].first;
+            dy = validDirections[bestIndex].second;
         }
-        // Если выбранное направление заблокировано, продолжаем текущее или ищем альтернативу
-        else if (!map.canMove(x + dx, y + dy)) {
-            findAlternativeDirection(map);
+        else {
+            // Если нет других путей, пробуем идти назад
+            if (map.canMove(getCurrentTileX() - dx, getCurrentTileY() - dy)) {
+                dx = -dx;
+                dy = -dy;
+            }
         }
     }
 
-    // Бегство от Пакмана (в уязвимом режиме)
-    void fleeFromPacman(const GameMap& map, const Pacman& pacman) {
-        float pacmanX = pacman.getX();
-        float pacmanY = pacman.getY();
-
-        int flee_dx = 0;
-        int flee_dy = 0;
-
-        // Выбираем направление противоположное Пакману
-        if (std::abs(pacmanX - x) > std::abs(pacmanY - y)) {
-            flee_dx = (pacmanX > x) ? -1 : 1;
-        }
-        else {
-            flee_dy = (pacmanY > y) ? -1 : 1;
+    void chooseRandomDirection(const GameMap& map) {
+        if (!isAtIntersection()) {
+            return;
         }
 
-        // Пытаемся двигаться в направлении бегства
-        if (flee_dx != 0 && map.canMove(x + flee_dx, y)) {
-            dx = flee_dx;
-            dy = 0;
+        alignToGrid();
+
+        std::vector<std::pair<int, int>> validDirections;
+        std::vector<std::pair<int, int>> directions = {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}
+        };
+
+        for (const auto& dir : directions) {
+            int testX = getCurrentTileX() + dir.first;
+            int testY = getCurrentTileY() + dir.second;
+
+            if (map.canMove(testX, testY)) {
+                validDirections.push_back(dir);
+            }
         }
-        else if (flee_dy != 0 && map.canMove(x, y + flee_dy)) {
-            dx = 0;
-            dy = flee_dy;
-        }
-        // Если направление бегства заблокировано, ищем альтернативу
-        else if (!map.canMove(x + dx, y + dy)) {
-            findAlternativeDirection(map);
+
+        if (!validDirections.empty()) {
+            auto randomDir = validDirections[rand() % validDirections.size()];
+            dx = randomDir.first;
+            dy = randomDir.second;
         }
     }
 
-    // Поиск альтернативного направления
-    void findAlternativeDirection(const GameMap& map) {
-        std::vector<std::pair<int, int>> possibleMoves;
-        if (map.canMove(x + 1, y)) possibleMoves.push_back({ 1, 0 });
-        if (map.canMove(x - 1, y)) possibleMoves.push_back({ -1, 0 });
-        if (map.canMove(x, y + 1)) possibleMoves.push_back({ 0, 1 });
-        if (map.canMove(x, y - 1)) possibleMoves.push_back({ 0, -1 });
-
-        if (!possibleMoves.empty()) {
-            auto move = possibleMoves[rand() % possibleMoves.size()];
-            dx = move.first;
-            dy = move.second;
+    void updateMode() {
+        if (vulnerable) {
+            frightenedTimer--;
+            if (frightenedTimer <= 0) {
+                vulnerable = false;
+                std::cout << "Ghost is no longer vulnerable" << std::endl;
+            }
         }
-        else {
-            dx = 0;
-            dy = 0;
-        }
-    }
 
-    // Случайное патрулирование
-    void randomMove(const GameMap& map) {
-        // Если уперлись в стену или стоим на месте, ищем новый путь
-        if (!map.canMove(x + dx, y + dy) || (dx == 0 && dy == 0)) {
-            findAlternativeDirection(map);
+        // Переключение между scatter и chase режимами
+        modeTimer--;
+        if (modeTimer <= 0) {
+            inScatterMode = !inScatterMode;
+            modeTimer = inScatterMode ? 350 : 1000; // Scatter: 7 сек, Chase: 20 сек
         }
     }
 
 public:
-    Ghost(float startX = 0, float startY = 0)
-        : x(startX), y(startY), speed(0.07f), dx(0), dy(0), visionRadius(8.0f),
-        vulnerable(false), respawnX(startX), respawnY(startY) {
+    Ghost(float startX, float startY, GhostColor ghostColor)
+        : x(startX), y(startY), speed(0.08f), dx(0), dy(0),
+        vulnerable(false), respawnX(startX), respawnY(startY),
+        color(ghostColor), frightenedTimer(0), modeTimer(350),
+        inScatterMode(true) {
     }
 
     void update(const GameMap& map, const Pacman& pacman) {
-        float pacmanX = pacman.getX();
-        float pacmanY = pacman.getY();
+        updateMode();
+        chooseBestDirection(map, pacman);
 
-        bool canSeePacman = false;
-
-        // Проверяем зрение по горизонтали
-        if (static_cast<int>(y) == static_cast<int>(pacmanY) && std::abs(x - pacmanX) < visionRadius) {
-            canSeePacman = true;
-        }
-        // Проверяем зрение по вертикали
-        if (static_cast<int>(x) == static_cast<int>(pacmanX) && std::abs(y - pacmanY) < visionRadius) {
-            canSeePacman = true;
-        }
-
-        if (vulnerable) {
-            // В уязвимом режиме призрак убегает от Пакмана
-            if (canSeePacman) {
-                fleeFromPacman(map, pacman);
-            }
-            else {
-                randomMove(map);
-            }
-        }
-        else {
-            // Обычный режим
-            if (canSeePacman) {
-                chasePacman(map, pacman);
-            }
-            else {
-                randomMove(map);
-            }
-        }
-
-        // Проверяем стену перед каждым движением
+        // Движение
         float newX = x + dx * speed;
         float newY = y + dy * speed;
 
-        if (map.canMove(newX, newY)) {
-            x = newX;
-            y = newY;
-        }
-        else {
-            // Если движение заблокировано, останавливаемся и выравниваем позицию
-            x = std::round(x);
-            y = std::round(y);
-            dx = 0;
-            dy = 0;
+        // Проверяем возможность движения в выбранном направлении
+        if (dx != 0 || dy != 0) {
+            if (map.canMove(newX, newY)) {
+                x = newX;
+                y = newY;
+            }
+            else {
+                // Если не можем двигаться, останавливаемся и выравниваем
+                alignToGrid();
+                dx = 0;
+                dy = 0;
+            }
         }
     }
 
-    // Установка уязвимости
     void setVulnerable(bool isVulnerable) {
-        vulnerable = isVulnerable;
+        if (isVulnerable) {
+            vulnerable = true;
+            frightenedTimer = 180; // 6 секунд уязвимости
+           
+            dx = -dx;
+            dy = -dy;
+        }
+        else {
+            vulnerable = false;
+            frightenedTimer = 0;
+        }
     }
 
     bool isVulnerable() const {
         return vulnerable;
     }
 
-    // Возрождение призрака после съедения
+    GhostColor getColor() const {
+        return color;
+    }
+
     void respawn(int mapWidth, int mapHeight) {
-        x = respawnX;
-        y = respawnY;
+        // Возвращаем призрака на стартовую позицию с небольшим случайным смещением
+        x = respawnX + (rand() % 3 - 1) * 0.5f;
+        y = respawnY + (rand() % 3 - 1) * 0.5f;
         dx = 0;
         dy = 0;
         vulnerable = false;
+        inScatterMode = true;
+        modeTimer = 350;
+        frightenedTimer = 0;
+
+        // Выравниваем к сетке
+        alignToGrid();
     }
 
     float getX() const { return x; }
     float getY() const { return y; }
 
-    // Добавим метод для сброса позиции
     void resetPosition(float newX, float newY) {
         x = newX;
         y = newY;
         dx = 0;
         dy = 0;
         vulnerable = false;
+        inScatterMode = true;
+        modeTimer = 350;
+        frightenedTimer = 0;
     }
 
-    // Установка скорости (для разных уровней сложности)
     void setSpeed(float newSpeed) {
         speed = newSpeed;
     }
+
+    // Для отладки - получение текущего направления
+    int getDirectionX() const { return dx; }
+    int getDirectionY() const { return dy; }
 };
 
 #endif
