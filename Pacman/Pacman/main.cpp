@@ -27,6 +27,63 @@ void drawCircle(float x, float y, float r, int segments) {
     glEnd();
 }
 
+void drawPacman(float x, float y, float size, float mouthAngle, int dx, int dy) {
+    // Рисуем основное тело Пакмана
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex2f(x, y); // Центр Пакмана
+
+    // Определяем начальный угол в зависимости от направления
+    float startAngle = 0.0f;
+    if (dx == 1) startAngle = 0.0f;      // Вправо
+    else if (dx == -1) startAngle = M_PI; // Влево
+    else if (dy == 1) startAngle = M_PI / 2.0f; // Вверх
+    else if (dy == -1) startAngle = 3.0f * M_PI / 2.0f; // Вниз
+    else startAngle = 0.0f; // По умолчанию (если стоит на месте)
+
+    // Рисуем Пакмана с ртом
+    const int segments = 50;
+    for (int i = 0; i <= segments; i++) {
+        float angle = startAngle + mouthAngle + (2.0f * M_PI - 2.0f * mouthAngle) * i / segments;
+        glVertex2f(x + size * cos(angle), y + size * sin(angle));
+    }
+    glEnd();
+
+    // Рисуем глазки
+    glColor3f(0.0f, 0.0f, 0.0f); // Черный цвет для глаз
+
+    float eyeOffsetX = 0.0f;
+    float eyeOffsetY = 0.0f;
+    float eyeSize = size * 0.15f; // Размер глаза
+
+    // Позиция глаза в зависимости от направления
+    if (dx == 1) { // Вправо
+        eyeOffsetX = size * 0.3f;
+        eyeOffsetY = size * 0.3f;
+    }
+    else if (dx == -1) { // Влево
+        eyeOffsetX = -size * 0.3f;
+        eyeOffsetY = size * 0.3f;
+    }
+    else if (dy == 1) { // Вверх
+        eyeOffsetX = 0.0f;
+        eyeOffsetY = size * 0.4f;
+    }
+    else if (dy == -1) { // Вниз
+        eyeOffsetX = 0.0f;
+        eyeOffsetY = -size * 0.2f;
+    }
+    else { // Стоит на месте (смотрит вправо)
+        eyeOffsetX = size * 0.3f;
+        eyeOffsetY = size * 0.3f;
+    }
+
+    // Рисуем глаз
+    drawCircle(x + eyeOffsetX, y + eyeOffsetY, eyeSize, 12);
+
+    // Возвращаем желтый цвет для остальной отрисовки
+    glColor3f(1.0f, 1.0f, 0.0f);
+}
+
 void drawText(float x, float y, const std::string& text) {
     glRasterPos2f(x, y);
     for (char c : text) {
@@ -66,33 +123,39 @@ void display() {
                 break;
             case POWER_POINT:
                 glColor3f(1.0f, 1.0f, 1.0f);
-                drawCircle(x + CELL_SIZE / 2.0f, y + CELL_SIZE / 2.0f, 6, 16); // Больший размер
+                drawCircle(x + CELL_SIZE / 2.0f, y + CELL_SIZE / 2.0f, 6, 16);
                 break;
             case EMPTY:
                 break;
             }
         }
     }
-    // Отрисовка Пакмана
+
+    // Отрисовка Пакмана с ртом и глазками
     const auto& pacman = game.getPacman();
     glColor3f(1.0f, 1.0f, 0.0f);
-    drawCircle(pacman.getX() * CELL_SIZE + CELL_SIZE / 2.0f,
-        pacman.getY() * CELL_SIZE + CELL_SIZE / 2.0f,
-        CELL_SIZE / 2.5f, 30);
+    float pacmanX = pacman.getX() * CELL_SIZE + CELL_SIZE / 2.0f;
+    float pacmanY = pacman.getY() * CELL_SIZE + CELL_SIZE / 2.0f;
+    float pacmanSize = CELL_SIZE / 2.5f;
+
+    drawPacman(pacmanX, pacmanY, pacmanSize,
+        pacman.getMouthAngle(),
+        pacman.getDirectionX(),
+        pacman.getDirectionY());
 
     // Отрисовка призраков
     for (const auto& ghost : game.getGhosts()) {
         if (game.areGhostsVulnerable() && ghost.isVulnerable()) {
             // Мигание синим и белым в уязвимом режиме
             if (game.getFlashTimer() < 5) {
-                glColor3f(0.0f, 0.0f, 1.0f);
+                glColor3f(0.0f, 0.0f, 1.0f); // Синий
             }
             else {
                 glColor3f(1.0f, 1.0f, 1.0f); // Белый
             }
         }
         else {
-            glColor3f(1.0f, 0.0f, 0.0f); 
+            glColor3f(1.0f, 0.0f, 0.0f); // Красный (обычный)
         }
 
         drawCircle(ghost.getX() * CELL_SIZE + CELL_SIZE / 2.0f,

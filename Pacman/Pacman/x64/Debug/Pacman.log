@@ -2,19 +2,23 @@
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\gameMap.h(18,29): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(34,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(41,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(34,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(41,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(55,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(55,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(24,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(55,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(56,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(38,37): warning C4305: '=': truncation from 'double' to 'float'
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(39,41): warning C4305: '=': truncation from 'double' to 'float'
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(40,49): warning C4305: '=': truncation from 'double' to 'float'
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(46,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(112,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(113,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   Pacman.vcxproj -> D:\remote git\Pac-man_OpenGL\Pacman\x64\Debug\Pacman.exe
