@@ -14,37 +14,34 @@ D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,42): warning C4244: 'argu
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(43,28): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(45,28): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(44,28): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(46,28): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(69,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(75,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(135,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(166,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(135,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(166,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(136,32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(168,32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(146,27): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(190,53): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(152,71): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(190,38): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(152,47): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(216,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(175,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'main.cpp')
-  
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(175,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(216,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\game.h(112,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data

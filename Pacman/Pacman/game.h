@@ -49,11 +49,11 @@ public:
         int mapWidth = map.getWidth();
         int mapHeight = map.getHeight();
 
-        // Размещаем призраков в разных стартовых позициях
-        ghosts.push_back(Ghost(9.0f, 10.0f, RED));    // Blinky - центр
-        ghosts.push_back(Ghost(8.0f, 10.0f, PINK));   // Pinky  
-        ghosts.push_back(Ghost(10.0f, 10.0f, CYAN));  // Inky
-        ghosts.push_back(Ghost(9.0f, 9.0f, ORANGE));  // Clyde
+      
+        ghosts.push_back(Ghost(9, 22, RED));   
+        ghosts.push_back(Ghost(8, 21, PINK));   
+        ghosts.push_back(Ghost(9, 21, CYAN));  
+        ghosts.push_back(Ghost(10, 21, ORANGE)); 
 
         // Даем им начальные направления
         ghosts[0].setSpeed(0.08f); // Blinky

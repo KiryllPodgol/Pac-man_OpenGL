@@ -57,23 +57,23 @@ void drawPacman(float x, float y, float size, float mouthAngle, int dx, int dy) 
 
     // Позиция глаза в зависимости от направления
     if (dx == 1) { // Вправо
-        eyeOffsetX = size * 0.3f;
+        eyeOffsetX = 0.0f;  
         eyeOffsetY = size * 0.3f;
     }
     else if (dx == -1) { // Влево
-        eyeOffsetX = -size * 0.3f;
-        eyeOffsetY = size * 0.3f;
+        eyeOffsetX = -size * 0.2f;  
+        eyeOffsetY = size * 0.5f;
     }
     else if (dy == 1) { // Вверх
-        eyeOffsetX = 0.0f;
-        eyeOffsetY = size * 0.4f;
+        eyeOffsetX = 0.1f;
+        eyeOffsetY = -size * 0.2f;  
     }
     else if (dy == -1) { // Вниз
-        eyeOffsetX = 0.0f;
-        eyeOffsetY = -size * 0.2f;
+        eyeOffsetX = 0.1f;
+        eyeOffsetY = size * 0.2f;  
     }
     else { // Стоит на месте (смотрит вправо)
-        eyeOffsetX = size * 0.3f;
+        eyeOffsetX = size * 0.1f;
         eyeOffsetY = size * 0.3f;
     }
 
@@ -136,7 +136,7 @@ void display() {
     glColor3f(1.0f, 1.0f, 0.0f);
     float pacmanX = pacman.getX() * CELL_SIZE + CELL_SIZE / 2.0f;
     float pacmanY = pacman.getY() * CELL_SIZE + CELL_SIZE / 2.0f;
-    float pacmanSize = CELL_SIZE / 2.5f;
+    float pacmanSize = CELL_SIZE / 1.5f;
 
     drawPacman(pacmanX, pacmanY, pacmanSize,
         pacman.getMouthAngle(),

@@ -3,12 +3,8 @@
   "WorkspaceRootPath": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\ghost.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\ghost.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\pacman.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -19,16 +15,16 @@
       "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\gameMap.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\game.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\ghost.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\ghost.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\cell.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\cell.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\coin.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F18B332A-581F-4C2E-AB07-A61D4AB4DADC}|Pacman\\Pacman.vcxproj|solutionrelative:Pacman\\coin.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,17 +34,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "pacman.h",
               "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\pacman.h",
               "RelativeDocumentMoniker": "Pacman\\pacman.h",
               "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\pacman.h",
               "RelativeToolTip": "Pacman\\pacman.h",
-              "ViewState": "AgIAAFMAAAAAAAAAAAAswHMAAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAAFsAAAAAAAAAAAAqwHMAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-10-01T14:47:22.317Z",
               "IsPinned": true,
@@ -56,13 +52,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "main.cpp",
               "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\main.cpp",
               "RelativeDocumentMoniker": "Pacman\\main.cpp",
               "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\main.cpp",
               "RelativeToolTip": "Pacman\\main.cpp",
-              "ViewState": "AgIAANwAAAAAAAAAAAAswPwAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAawDsAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-10-01T14:46:33.404Z",
               "IsPinned": true,
@@ -82,60 +78,44 @@
               "IsPinned": true
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "game.h",
-              "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h",
-              "RelativeDocumentMoniker": "Pacman\\game.h",
-              "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h",
-              "RelativeToolTip": "Pacman\\game.h",
-              "ViewState": "AgIAACwAAAAAAAAAAAAswDsAAAAtAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-01T14:46:47.061Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{56df62a4-05a3-4e5b-aa1a-99371ccfb997}"
-            },
-            {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "coin.h",
-              "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\coin.h",
-              "RelativeDocumentMoniker": "Pacman\\coin.h",
-              "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\coin.h",
-              "RelativeToolTip": "Pacman\\coin.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAeAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "game.h",
+              "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h",
+              "RelativeDocumentMoniker": "Pacman\\game.h",
+              "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\game.h",
+              "RelativeToolTip": "Pacman\\game.h",
+              "ViewState": "AgIAACwAAAAAAAAAAAAswDcAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-01T15:06:35.644Z"
+              "WhenOpened": "2025-10-01T14:46:47.061Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "gameMap.h",
               "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\gameMap.h",
               "RelativeDocumentMoniker": "Pacman\\gameMap.h",
               "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\gameMap.h",
               "RelativeToolTip": "Pacman\\gameMap.h",
-              "ViewState": "AgIAAG0AAAAAAAAAAAAswI0AAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAAHsAAAAAAAAAAAAAAI8AAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-10-01T14:46:58.332Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "ghost.h",
               "DocumentMoniker": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\ghost.h",
               "RelativeDocumentMoniker": "Pacman\\ghost.h",
               "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\ghost.h",
               "RelativeToolTip": "Pacman\\ghost.h",
-              "ViewState": "AgIAAMYAAAAAAAAAAAAswCEBAAACAAAAAAAAAA==",
+              "ViewState": "AgIAAEkBAAAAAAAAAAAqwGEBAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-10-01T09:16:37.41Z",
               "EditorCaption": ""

@@ -21,7 +21,7 @@ public:
         : x(startX), y(startY), startX(startX), startY(startY),
         dx(0), dy(0), nextDx(0), nextDy(0),
         speed(0.1f), lives(1),
-        mouthAngle(0.0f), mouthSpeed(0.05f), mouthOpening(true) {
+        mouthAngle(0.0f), mouthSpeed(0.08f), mouthOpening(true) {
     }
 
     void setDirection(int ndx, int ndy) {
@@ -73,7 +73,7 @@ public:
     void updateMouthAnimation() {
         if (mouthOpening) {
             mouthAngle += mouthSpeed;
-            if (mouthAngle >= 0.5f) {
+            if (mouthAngle >= 1.0f) {
                 mouthOpening = false;
             }
         }

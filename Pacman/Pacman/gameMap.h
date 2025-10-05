@@ -70,7 +70,100 @@ public:
         grid[height - 6][width - 6].type = WALL;
         grid[height - 6][width - 7].type = WALL;
         grid[height - 7][width - 6].type = WALL;
+
+
+        
+        
+        grid[8][3].type = WALL;
+        grid[9][3].type = WALL;
+        grid[10][3].type = WALL;
+        grid[10][2].type = WALL;
+
+        grid[11][3].type = WALL;
+        grid[12][3].type = WALL;
+
+
+        grid[8][15].type = WALL;
+        grid[9][15].type = WALL;
+        grid[10][15].type = WALL;
+        grid[10][16].type = WALL;
+        grid[11][15].type = WALL;
+        grid[12][15].type = WALL;
+
+        grid[19][2].type = WALL;
+        grid[19][4].type = WALL;
+       
+        grid[1][2].type = WALL;
+        grid[1][4].type = WALL;
+
+        grid[1][16].type = WALL;
+        grid[1][14].type = WALL;
+
+
+
+        grid[1][6].type = WALL;
+        grid[2][6].type = WALL;
+        grid[3][6].type = WALL;
+        grid[4][6].type = WALL;
+
+
+        grid[1][12].type = WALL;
+        grid[2][12].type = WALL;
+        grid[3][12].type = WALL;
+        grid[4][12].type = WALL;
+
+       
+
+
+        grid[16][6].type = WALL;
+        grid[17][6].type = WALL;
+        grid[18][6].type = WALL;
+        grid[19][6].type = WALL;
+
+        grid[16][12].type = WALL;
+        grid[17][12].type = WALL;
+        grid[18][12].type = WALL;
+        grid[19][12].type = WALL;
+
+        
+        grid[19][16].type = WALL;
+        grid[19][14].type = WALL;
+
+
+        grid[10][10].type = WALL;
+        grid[10][9].type = WALL;
+
+
+        grid[11][9].type = WALL;
+        grid[12][9].type = WALL;
+        grid[13][9].type = WALL;
+
+
+        grid[9][9].type = WALL;
+        grid[8][9].type = WALL;
+        grid[7][9].type = WALL;
+
+
+
+
+        grid[10][8].type = WALL;
+        grid[10][7].type = WALL;
+        grid[10][10].type = WALL;
+        grid[10][11].type = WALL;
+
+
+
+
+
+       
+        
+
+
+
+       
+
     }
+
 
     void createCoins() {
         for (int i = 0; i < height; i++) {
