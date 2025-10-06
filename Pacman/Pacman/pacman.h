@@ -12,21 +12,29 @@ private:
     int nextDx, nextDy;
     float speed;
     int lives;
-    float mouthAngle; // Угол открытия рта
-    float mouthSpeed; // Скорость анимации рта
-    bool mouthOpening; // Направление анимации (открытие/закрытие)
+    float mouthAngle;
+    float mouthSpeed;
+    bool mouthOpening;
+    float rotationY;
 
 public:
     Pacman(float startX = 0, float startY = 0)
         : x(startX), y(startY), startX(startX), startY(startY),
         dx(0), dy(0), nextDx(0), nextDy(0),
         speed(0.1f), lives(1),
-        mouthAngle(0.0f), mouthSpeed(0.08f), mouthOpening(true) {
+        mouthAngle(0.0f), mouthSpeed(0.08f), mouthOpening(true),
+        rotationY(0) {
     }
 
     void setDirection(int ndx, int ndy) {
         nextDx = ndx;
         nextDy = ndy;
+
+        
+        if (ndx == 1) rotationY = 0;      // Вправо
+        else if (ndx == -1) rotationY = 180; // Влево
+        else if (ndy == 1) rotationY = 90;   // Вверх
+        else if (ndy == -1) rotationY = 270; // Вниз
     }
 
     void update(const GameMap& map) {
@@ -41,6 +49,12 @@ public:
             if (map.canMove(testX, testY)) {
                 dx = nextDx;
                 dy = nextDy;
+
+                
+                if (dx == 1) rotationY = 0;      // Вправо
+                else if (dx == -1) rotationY = 180; // Влево
+                else if (dy == 1) rotationY = 90;   // Вверх
+                else if (dy == -1) rotationY = 270; // Вниз
             }
             nextDx = 0;
             nextDy = 0;
@@ -100,6 +114,7 @@ public:
         nextDy = 0;
         mouthAngle = 0.0f;
         mouthOpening = true;
+        rotationY = 0;
     }
 
     bool isAlive() const { return lives > 0; }
@@ -107,10 +122,14 @@ public:
     float getY() const { return y; }
     void setSpeed(float s) { speed = s; }
 
-    // Геттеры для анимации рта
+    // Геттеры для анимации рта и направления
     float getMouthAngle() const { return mouthAngle; }
     int getDirectionX() const { return dx; }
     int getDirectionY() const { return dy; }
+
+    // Геттеры для 3D
+    float getRotationY() const { return rotationY; }
+    float getSpeed() const { return speed; }
 };
 
 #endif

@@ -2,16 +2,16 @@
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\gameMap.h(18,29): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(41,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(49,36): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(41,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(49,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(74,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(60,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\pacman.h(74,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(45,28): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
@@ -47,11 +47,8 @@ D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(216,29): warning C4244: 'argu
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\game.h(112,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(24,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(38,37): warning C4305: '=': truncation from 'double' to 'float'
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(39,41): warning C4305: '=': truncation from 'double' to 'float'
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(40,49): warning C4305: '=': truncation from 'double' to 'float'
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(46,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(112,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(113,21): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(38,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(40,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(56,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(58,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Pacman.vcxproj -> D:\remote git\Pac-man_OpenGL\Pacman\x64\Debug\Pacman.exe
