@@ -46,15 +46,13 @@ private:
     const aiScene* scene;
     bool loaded;
     float scaleFactor;
-    Assimp::Importer importer; // <-- ДОБАВЬ ЭТУ СТРОКУ. Импортер теперь живет вместе с объектом.
+    Assimp::Importer importer; // Импортер живет вместе с объектом
 
 public:
     SimpleModel3DS() : scene(nullptr), loaded(false), scaleFactor(1.0f) {}
 
+    // Метод для загрузки модели
     bool loadFromFile(const std::string& filename) {
-        // Assimp::Importer importer; // <-- УДАЛИ ЭТУ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ
-
-        // Теперь используется член класса 'importer', который не будет уничтожен
         scene = importer.ReadFile(filename,
             aiProcess_Triangulate |
             aiProcess_GenSmoothNormals |
@@ -75,7 +73,8 @@ public:
         return true;
     }
 
-    void render() const {
+    // Единственный метод рендеринга, поддерживающий тонирование (для призраков)
+    void render(const GLfloat* tintColor = nullptr) const {
         if (!loaded || !scene) return;
 
         glPushMatrix();
@@ -85,29 +84,49 @@ public:
         for (unsigned int m = 0; m < scene->mNumMeshes; m++) {
             const aiMesh* mesh = scene->mMeshes[m];
 
-            // Получаем индекс материала для этого меша
-            unsigned int materialIndex = mesh->mMaterialIndex;
-            if (materialIndex < scene->mNumMaterials) {
-                // Получаем сам материал из сцены
-                const aiMaterial* material = scene->mMaterials[materialIndex];
+            // 1. ЛОГИКА ТОНИРОВАНИЯ (для тела призрака)
+            if (tintColor != nullptr && m == 0) {
+                // Устанавливаем переданный цвет
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, tintColor);
 
-                // Получаем диффузный (основной) цвет из материала
-                aiColor4D diffuseColor;
-                if (aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuseColor) == AI_SUCCESS) {
-                    // Устанавливаем этот цвет как материал в OpenGL
-                    GLfloat color[] = { diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a };
-                    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
-                }
+                // Фоновый цвет (немного темнее для глубины)
+                GLfloat ambientColor[] = { tintColor[0] * 0.4f, tintColor[1] * 0.4f, tintColor[2] * 0.4f, 1.0f };
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ambientColor);
 
-                // Можно также получить и другие свойства, например, фоновый (ambient)
-                aiColor4D ambientColor;
-                if (aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambientColor) == AI_SUCCESS) {
-                    GLfloat color[] = { ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a };
-                    glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+                // Устанавливаем яркий блик для тела
+                GLfloat ghost_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+                glMaterialfv(GL_FRONT, GL_SPECULAR, ghost_specular);
+                glMaterialf(GL_FRONT, GL_SHININESS, 32.0f);
+
+            }
+            // 2. ЛОГИКА ИСПОЛЬЗОВАНИЯ МАТЕРИАЛОВ ИЗ ФАЙЛА (для глаз или Pacman'а)
+            else {
+                unsigned int materialIndex = mesh->mMaterialIndex;
+                if (materialIndex < scene->mNumMaterials) {
+                    const aiMaterial* material = scene->mMaterials[materialIndex];
+
+                    // Сброс блика/блеска для глаз, чтобы они не выглядели как глянцевый пластик
+                    GLfloat default_specular[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+                    glMaterialfv(GL_FRONT, GL_SPECULAR, default_specular);
+                    glMaterialf(GL_FRONT, GL_SHININESS, 10.0f);
+
+                    // Diffuse (Основной цвет)
+                    aiColor4D diffuseColor;
+                    if (aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuseColor) == AI_SUCCESS) {
+                        GLfloat color[] = { diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a };
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+                    }
+
+                    // Ambient (Фоновый цвет)
+                    aiColor4D ambientColor;
+                    if (aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambientColor) == AI_SUCCESS) {
+                        GLfloat color[] = { ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a };
+                        glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+                    }
                 }
             }
 
-            // Теперь отрисовываем меш с уже установленным для него материалом
+            // Отрисовываем меш с уже установленным для него материалом
             renderSimpleMesh(mesh);
         }
 
@@ -116,7 +135,7 @@ public:
 
 private:
     void calculateSimpleScale() {
-        // Простое вычисление масштаба
+        // Простое вычисление масштаба (оставлено без изменений)
         if (scene->mNumMeshes > 0) {
             const aiMesh* mesh = scene->mMeshes[0];
             float maxSize = 0.0f;
@@ -135,7 +154,7 @@ private:
     }
 
     void renderSimpleMesh(const aiMesh* mesh) const {
-        // Рендерим треугольники
+        // Рендерим треугольники (оставлено без изменений)
         glBegin(GL_TRIANGLES);
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
             const aiFace& face = mesh->mFaces[i];
@@ -159,7 +178,6 @@ private:
         glEnd();
     }
 };
-
 const int N = 21;
 const int M = 19;
 const float CELL_SIZE_3D = 2.0f;
@@ -416,6 +434,7 @@ void drawGhost3D(float x, float y, float z, float size, GhostColor color, bool i
     glPushMatrix();
     glTranslatef(x, y + size * 0.5f, z);
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+
     float r, g, b;
     if (isVulnerable) {
         r = 0.0f; g = 0.0f; b = 1.0f; // Синий для уязвимых
@@ -430,27 +449,28 @@ void drawGhost3D(float x, float y, float z, float size, GhostColor color, bool i
         }
     }
 
-    // Материал для призрака
-    GLfloat ghost_ambient[] = { r * 0.4f, g * 0.4f, b * 0.4f, 1.0f };
-    GLfloat ghost_diffuse[] = { r, g, b, 1.0f };
-    GLfloat ghost_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ghost_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, ghost_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, ghost_specular);
-    glMaterialf(GL_FRONT, GL_SHININESS, 32.0f);
+    
 
     if (ghostModelLoaded) {
-        ghostModel.render();
+        // Создаем массив с цветом для передачи в render
+        GLfloat tintColor[] = { r, g, b, 1.0f };
+        // Вызываем render с этим цветом
+        ghostModel.render(tintColor); // <-- Теперь передаем цвет сюда
     }
     else {
-        // Fallback: стандартная сфера
+        // Fallback: здесь можно установить цвет для сферы
+        GLfloat fallback_color[] = { r, g, b, 1.0f };
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fallback_color);
+        // Чтобы Fallback выглядел как серебристый призрак (как раньше), 
+        // нужно добавить specular и shininess
+        GLfloat ghost_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ghost_specular);
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
         glutSolidSphere(size, 16, 16);
     }
 
     glPopMatrix();
 }
-
 void drawMap3D() {
     const auto& map = game.getMap();
     const auto& grid = map.getGrid();
@@ -550,13 +570,13 @@ void display() {
     float pacmanX = pacman.getX() * CELL_SIZE_3D;
     float pacmanZ = (N - pacman.getY()) * CELL_SIZE_3D;
 
-    drawPacman3D(pacmanX, 1.0f, pacmanZ, 0.8f, pacman.getMouthAngle(), pacman.getRotationY());
+    drawPacman3D(pacmanX, 1.0f, pacmanZ, 0.6f, pacman.getMouthAngle(), pacman.getRotationY());
 
     int ghostIndex = 0;
     for (const auto& ghost : game.getGhosts()) {
         float ghostX = ghost.getX() * CELL_SIZE_3D;
         float ghostZ = (N - ghost.getY()) * CELL_SIZE_3D;
-        drawGhost3D(ghostX, 0, ghostZ, 0.7f, ghost.getColor(), ghost.isVulnerable(), ghostIndex);
+        drawGhost3D(ghostX, 0, ghostZ, 6.0f, ghost.getColor(), ghost.isVulnerable(), ghostIndex);
         ghostIndex++;
     }
 
