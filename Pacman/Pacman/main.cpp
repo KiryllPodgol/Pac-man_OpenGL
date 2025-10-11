@@ -1,7 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <GL/glut.h>
-
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/mesh.h>
 #include <iostream>
 #include <cmath>
 #include "game.h"
@@ -15,421 +18,145 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Класс для представления материала
-class Material {
-public:
-    std::string name;
-    float ambient[3];
-    float diffuse[3];
-    float specular[3];
-    float shininess;
-    float transparency;
-    std::string textureFile;
-
-    Material() : shininess(0.0f), transparency(1.0f) {
-        ambient[0] = ambient[1] = ambient[2] = 0.2f;
-        diffuse[0] = diffuse[1] = diffuse[2] = 0.8f;
-        specular[0] = specular[1] = specular[2] = 0.0f;
+// Вспомогательные функции для работы с матрицами
+aiMatrix4x4 multiplyMatrices(const aiMatrix4x4& a, const aiMatrix4x4& b) {
+    aiMatrix4x4 result;
+    for (unsigned int i = 0; i < 4; ++i) {
+        for (unsigned int j = 0; j < 4; ++j) {
+            result[i][j] = 0.0f;
+            for (unsigned int k = 0; k < 4; ++k) {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+        }
     }
-};
-
-static inline std::string trim(const std::string& s) {
-    const char* ws = " \t\r\n";
-    size_t start = s.find_first_not_of(ws);
-    if (start == std::string::npos) return "";
-    size_t end = s.find_last_not_of(ws);
-    return s.substr(start, end - start + 1);
+    return result;
 }
 
-// Улучшенная реализация класса Model для загрузки OBJ с материалами
-class Model {
+aiVector3D transformVector(const aiMatrix4x4& matrix, const aiVector3D& vector) {
+    aiVector3D result;
+    result.x = matrix.a1 * vector.x + matrix.a2 * vector.y + matrix.a3 * vector.z + matrix.a4;
+    result.y = matrix.b1 * vector.x + matrix.b2 * vector.y + matrix.b3 * vector.z + matrix.b4;
+    result.z = matrix.c1 * vector.x + matrix.c2 * vector.y + matrix.c3 * vector.z + matrix.c4;
+    return result;
+}
+
+// Упрощенный класс для загрузки 3D моделей с использованием Assimp
+class SimpleModel3DS {
 private:
-    std::vector<float> vertices;
-    std::vector<float> texCoords;
-    std::vector<float> normals;
-    std::vector<unsigned int> indices;
-    std::vector<std::string> materialNames;
-    std::map<std::string, Material> materials;
-    bool hasTextureCoords;
-    bool hasNormals;
-    bool hasMaterials;
+    const aiScene* scene;
+    bool loaded;
+    float scaleFactor;
+    Assimp::Importer importer; // <-- ДОБАВЬ ЭТУ СТРОКУ. Импортер теперь живет вместе с объектом.
 
 public:
-    Model() : hasTextureCoords(false), hasNormals(false), hasMaterials(false) {}
-
-    bool loadMTL(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Cannot open MTL file: " << filename << std::endl;
-            // Попробуем найти файл в текущей директории
-            std::string currentDirFile = filename.substr(filename.find_last_of("/\\") + 1);
-            file.open(currentDirFile);
-            if (!file.is_open()) {
-                std::cerr << "Cannot open MTL file in current directory: " << currentDirFile << std::endl;
-                return false;
-            }
-        }
-
-        Material currentMaterial;
-        std::string line;
-        int materialsCount = 0;
-
-        while (std::getline(file, line)) {
-            line = trim(line);
-            // Пропускаем пустые строки и комментарии
-            if (line.empty() || line[0] == '#') continue;
-
-            std::istringstream iss(line);
-            std::string type;
-            iss >> type;
-
-            if (type == "newmtl") {
-                // Сохраняем предыдущий материал и начинаем новый
-                if (!currentMaterial.name.empty()) {
-                    materials[currentMaterial.name] = currentMaterial;
-                    materialsCount++;
-                    std::cout << "Saved material: " << currentMaterial.name << std::endl;
-                }
-                std::string materialName;
-                iss >> materialName;
-                currentMaterial = Material(); // Сброс к значениям по умолчанию
-                currentMaterial.name = materialName;
-                std::cout << "Found material: " << currentMaterial.name << std::endl;
-            }
-            else if (type == "Ka") { // Ambient
-                iss >> currentMaterial.ambient[0] >> currentMaterial.ambient[1] >> currentMaterial.ambient[2];
-                std::cout << "  Ambient: " << currentMaterial.ambient[0] << " " << currentMaterial.ambient[1] << " " << currentMaterial.ambient[2] << std::endl;
-            }
-            else if (type == "Kd") { // Diffuse
-                iss >> currentMaterial.diffuse[0] >> currentMaterial.diffuse[1] >> currentMaterial.diffuse[2];
-                std::cout << "  Diffuse: " << currentMaterial.diffuse[0] << " " << currentMaterial.diffuse[1] << " " << currentMaterial.diffuse[2] << std::endl;
-            }
-            else if (type == "Ks") { // Specular
-                iss >> currentMaterial.specular[0] >> currentMaterial.specular[1] >> currentMaterial.specular[2];
-                std::cout << "  Specular: " << currentMaterial.specular[0] << " " << currentMaterial.specular[1] << " " << currentMaterial.specular[2] << std::endl;
-            }
-            else if (type == "Ns") { // Shininess
-                iss >> currentMaterial.shininess;
-                std::cout << "  Shininess: " << currentMaterial.shininess << std::endl;
-            }
-            else if (type == "d" || type == "Tr") { // Transparency
-                iss >> currentMaterial.transparency;
-                std::cout << "  Transparency: " << currentMaterial.transparency << std::endl;
-            }
-            else if (type == "map_Kd") { // Diffuse texture
-                iss >> currentMaterial.textureFile;
-                std::cout << "  Texture: " << currentMaterial.textureFile << std::endl;
-            }
-            else if (type == "illum") { // Illumination model
-                int illum;
-                iss >> illum;
-                std::cout << "  Illumination: " << illum << std::endl;
-            }
-            else if (type == "Ni") { // Optical density (игнорируем)
-                float ni;
-                iss >> ni;
-                std::cout << "  Optical density: " << ni << " (ignored)" << std::endl;
-            }
-            else if (type == "Tf") { // Transmission filter (игнорируем)
-                float tf1, tf2, tf3;
-                iss >> tf1 >> tf2 >> tf3;
-                std::cout << "  Transmission filter: " << tf1 << " " << tf2 << " " << tf3 << " (ignored)" << std::endl;
-            }
-            else if (type == "Ke") { // Emissive
-                float ke1, ke2, ke3;
-                iss >> ke1 >> ke2 >> ke3;
-                std::cout << "  Emissive: " << ke1 << " " << ke2 << " " << ke3 << " (ignored)" << std::endl;
-            }
-            else {
-                std::cout << "Unknown MTL parameter: " << type << " in line: " << line << std::endl;
-            }
-        }
-
-        // Не забываем сохранить последний материал
-        if (!currentMaterial.name.empty()) {
-            materials[currentMaterial.name] = currentMaterial;
-            materialsCount++;
-            std::cout << "Saved material: " << currentMaterial.name << std::endl;
-        }
-
-        file.close();
-        std::cout << "Successfully loaded " << materialsCount << " materials from " << filename << std::endl;
-
-        // Отладочная информация о материалах
-        std::cout << "=== Loaded Materials ===" << std::endl;
-        for (const auto& mat : materials) {
-            std::cout << "Material '" << mat.first << "': "
-                << "Ka(" << mat.second.ambient[0] << "," << mat.second.ambient[1] << "," << mat.second.ambient[2] << ") "
-                << "Kd(" << mat.second.diffuse[0] << "," << mat.second.diffuse[1] << "," << mat.second.diffuse[2] << ") "
-                << "Ks(" << mat.second.specular[0] << "," << mat.second.specular[1] << "," << mat.second.specular[2] << ") "
-                << "Ns(" << mat.second.shininess << ")" << std::endl;
-        }
-        std::cout << "========================" << std::endl;
-
-        return !materials.empty();
-    }
+    SimpleModel3DS() : scene(nullptr), loaded(false), scaleFactor(1.0f) {}
 
     bool loadFromFile(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Cannot open model file: " << filename << std::endl;
+        // Assimp::Importer importer; // <-- УДАЛИ ЭТУ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ
+
+        // Теперь используется член класса 'importer', который не будет уничтожен
+        scene = importer.ReadFile(filename,
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_FlipUVs |
+            aiProcess_JoinIdenticalVertices);
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+            std::cerr << "Assimp error: " << importer.GetErrorString() << std::endl;
             return false;
         }
 
-        vertices.clear();
-        texCoords.clear();
-        normals.clear();
-        indices.clear();
-        materialNames.clear();
+        loaded = true;
+        calculateSimpleScale();
 
-        std::vector<float> tempVertices;
-        std::vector<float> tempTexCoords;
-        std::vector<float> tempNormals;
-        std::vector<unsigned int> vertexIndices, texIndices, normalIndices;
-
-        std::string currentMaterial = "default";
-        std::string line;
-        std::string mtlFileToLoad = "";
-
-        while (std::getline(file, line)) {
-            line = trim(line);
-            // Пропускаем пустые строки и комментарии
-            if (line.empty() || line[0] == '#') continue;
-
-            std::istringstream iss(line);
-            std::string type;
-            iss >> type;
-
-            if (type == "v") { // Vertex
-                float x, y, z;
-                iss >> x >> y >> z;
-                tempVertices.push_back(x);
-                tempVertices.push_back(y);
-                tempVertices.push_back(z);
-            }
-            else if (type == "vt") { // Texture coordinate
-                float u, v;
-                iss >> u >> v;
-                tempTexCoords.push_back(u);
-                tempTexCoords.push_back(v);
-                hasTextureCoords = true;
-            }
-            else if (type == "vn") { // Normal
-                float x, y, z;
-                iss >> x >> y >> z;
-                tempNormals.push_back(x);
-                tempNormals.push_back(y);
-                tempNormals.push_back(z);
-                hasNormals = true;
-            }
-            else if (type == "f") { // Face
-                std::string v1, v2, v3;
-                iss >> v1 >> v2 >> v3;
-
-                processFaceVertex(v1, tempVertices.size() / 3, vertexIndices, texIndices, normalIndices);
-                processFaceVertex(v2, tempVertices.size() / 3, vertexIndices, texIndices, normalIndices);
-                processFaceVertex(v3, tempVertices.size() / 3, vertexIndices, texIndices, normalIndices);
-
-                // Сохраняем материал для этого треугольника
-                materialNames.push_back(currentMaterial);
-            }
-            else if (type == "usemtl") { // Use material
-                iss >> currentMaterial;
-                hasMaterials = true;
-                std::cout << "Using material: " << currentMaterial << std::endl;
-            }
-            else if (type == "mtllib") { // Material library
-                std::string mtlFile;
-                iss >> mtlFile;
-                mtlFileToLoad = mtlFile;
-                // Загружаем MTL файл (предполагаем, что он в той же директории)
-                if (!mtlFileToLoad.empty()) {
-                    std::cout << "Loading MTL file: " << mtlFileToLoad << std::endl;
-                    if (!loadMTL(mtlFileToLoad)) {
-                        // Попробуем загрузить из той же директории что и OBJ файл
-                        std::string objPath = filename.substr(0, filename.find_last_of("/\\") + 1);
-                        std::string fullMtlPath = objPath + mtlFileToLoad;
-                        std::cout << "Trying alternative path: " << fullMtlPath << std::endl;
-                        loadMTL(fullMtlPath);
-                    }
-                }
-            }
-        }
-
-        file.close();
-
-        // Process the data for rendering
-        for (unsigned int i = 0; i < vertexIndices.size(); i++) {
-            unsigned int vertexIndex = vertexIndices[i];
-
-            vertices.push_back(tempVertices[vertexIndex * 3]);
-            vertices.push_back(tempVertices[vertexIndex * 3 + 1]);
-            vertices.push_back(tempVertices[vertexIndex * 3 + 2]);
-
-            if (hasTextureCoords && i < texIndices.size()) {
-                unsigned int texIndex = texIndices[i];
-                texCoords.push_back(tempTexCoords[texIndex * 2]);
-                texCoords.push_back(tempTexCoords[texIndex * 2 + 1]);
-            }
-
-            if (hasNormals && i < normalIndices.size()) {
-                unsigned int normalIndex = normalIndices[i];
-                normals.push_back(tempNormals[normalIndex * 3]);
-                normals.push_back(tempNormals[normalIndex * 3 + 1]);
-                normals.push_back(tempNormals[normalIndex * 3 + 2]);
-            }
-
-            indices.push_back(i);
-        }
-
-        std::cout << "Model loaded: " << vertices.size() / 3 << " vertices, "
-            << indices.size() / 3 << " triangles, " << materials.size() << " materials" << std::endl;
-
-        // Проверяем, используются ли материалы
-        if (hasMaterials && !materialNames.empty()) {
-            std::cout << "First material used: " << materialNames[0] << std::endl;
-            // Проверяем, есть ли этот материал в загруженных
-            if (materials.find(materialNames[0]) == materials.end()) {
-                std::cout << "WARNING: Material '" << materialNames[0] << "' not found in loaded materials!" << std::endl;
-            }
-        }
+        std::cout << "Model loaded: " << filename << std::endl;
+        std::cout << "Meshes: " << scene->mNumMeshes << ", Materials: " << scene->mNumMaterials << std::endl;
 
         return true;
     }
 
-    void processFaceVertex(const std::string& vertex, unsigned int vertexCount,
-        std::vector<unsigned int>& vertexIndices,
-        std::vector<unsigned int>& texIndices,
-        std::vector<unsigned int>& normalIndices) {
-        std::istringstream viss(vertex);
-        std::string v, t, n;
-
-        std::getline(viss, v, '/');
-        std::getline(viss, t, '/');
-        std::getline(viss, n, '/');
-
-        unsigned int vi = std::stoi(v) - 1;
-        vertexIndices.push_back(vi);
-
-        if (!t.empty()) {
-            unsigned int ti = std::stoi(t) - 1;
-            texIndices.push_back(ti);
-        }
-
-        if (!n.empty()) {
-            unsigned int ni = std::stoi(n) - 1;
-            normalIndices.push_back(ni);
-        }
-    }
-
     void render() const {
-        if (hasMaterials && !materials.empty()) {
-            renderWithMaterials();
-        }
-        else {
-            renderSimple();
-        }
-    }
+        if (!loaded || !scene) return;
 
-    void renderWithMaterials() const {
-        if (materialNames.empty() || indices.empty()) {
-            renderSimple();
-            return;
-        }
+        glPushMatrix();
+        glScalef(scaleFactor, scaleFactor, scaleFactor);
 
-        // Группируем треугольники по материалам
-        std::map<std::string, std::vector<unsigned int>> materialGroups;
+        // Проходим по всем мешам (частям) модели
+        for (unsigned int m = 0; m < scene->mNumMeshes; m++) {
+            const aiMesh* mesh = scene->mMeshes[m];
 
-        for (size_t i = 0; i < indices.size(); i += 3) {
-            size_t triangleIndex = i / 3;
-            std::string material = (triangleIndex < materialNames.size()) ?
-                materialNames[triangleIndex] : "default";
-            materialGroups[material].push_back(indices[i]);
-            materialGroups[material].push_back(indices[i + 1]);
-            materialGroups[material].push_back(indices[i + 2]);
-        }
+            // Получаем индекс материала для этого меша
+            unsigned int materialIndex = mesh->mMaterialIndex;
+            if (materialIndex < scene->mNumMaterials) {
+                // Получаем сам материал из сцены
+                const aiMaterial* material = scene->mMaterials[materialIndex];
 
-        // Рендерим каждую группу с соответствующим материалом
-        for (const auto& group : materialGroups) {
-            applyMaterial(group.first);
-
-            glBegin(GL_TRIANGLES);
-            for (unsigned int index : group.second) {
-                if (hasNormals && index * 3 + 2 < normals.size()) {
-                    glNormal3f(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2]);
+                // Получаем диффузный (основной) цвет из материала
+                aiColor4D diffuseColor;
+                if (aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuseColor) == AI_SUCCESS) {
+                    // Устанавливаем этот цвет как материал в OpenGL
+                    GLfloat color[] = { diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a };
+                    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
                 }
 
-                if (hasTextureCoords && index * 2 + 1 < texCoords.size()) {
-                    glTexCoord2f(texCoords[index * 2], texCoords[index * 2 + 1]);
-                }
-
-                if (index * 3 + 2 < vertices.size()) {
-                    glVertex3f(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+                // Можно также получить и другие свойства, например, фоновый (ambient)
+                aiColor4D ambientColor;
+                if (aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambientColor) == AI_SUCCESS) {
+                    GLfloat color[] = { ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a };
+                    glMaterialfv(GL_FRONT, GL_AMBIENT, color);
                 }
             }
-            glEnd();
+
+            // Теперь отрисовываем меш с уже установленным для него материалом
+            renderSimpleMesh(mesh);
+        }
+
+        glPopMatrix();
+    }
+
+private:
+    void calculateSimpleScale() {
+        // Простое вычисление масштаба
+        if (scene->mNumMeshes > 0) {
+            const aiMesh* mesh = scene->mMeshes[0];
+            float maxSize = 0.0f;
+
+            for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+                const aiVector3D& vertex = mesh->mVertices[i];
+                maxSize = std::max(maxSize, std::abs(vertex.x));
+                maxSize = std::max(maxSize, std::abs(vertex.y));
+                maxSize = std::max(maxSize, std::abs(vertex.z));
+            }
+
+            if (maxSize > 0.0f) {
+                scaleFactor = 1.0f / maxSize;
+            }
         }
     }
 
-    void renderSimple() const {
-        // Простой рендеринг без материалов
-        glColor3f(1.0f, 1.0f, 0.0f); // Желтый цвет для Пакмана
+    void renderSimpleMesh(const aiMesh* mesh) const {
+        // Рендерим треугольники
         glBegin(GL_TRIANGLES);
-        for (size_t i = 0; i < indices.size(); i++) {
-            unsigned int index = indices[i];
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+            const aiFace& face = mesh->mFaces[i];
 
-            if (hasNormals && index * 3 + 2 < normals.size()) {
-                glNormal3f(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2]);
-            }
+            for (unsigned int j = 0; j < face.mNumIndices; j++) {
+                unsigned int index = face.mIndices[j];
 
-            if (hasTextureCoords && index * 2 + 1 < texCoords.size()) {
-                glTexCoord2f(texCoords[index * 2], texCoords[index * 2 + 1]);
-            }
+                // Нормали
+                if (mesh->HasNormals()) {
+                    glNormal3f(mesh->mNormals[index].x,
+                        mesh->mNormals[index].y,
+                        mesh->mNormals[index].z);
+                }
 
-            if (index * 3 + 2 < vertices.size()) {
-                glVertex3f(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+                // Вершины
+                glVertex3f(mesh->mVertices[index].x,
+                    mesh->mVertices[index].y,
+                    mesh->mVertices[index].z);
             }
         }
         glEnd();
-    }
-
-    void applyMaterial(const std::string& materialName) const {
-        auto it = materials.find(materialName);
-        if (it != materials.end()) {
-            const Material& mat = it->second;
-
-            GLfloat ambient[] = { mat.ambient[0], mat.ambient[1], mat.ambient[2], 1.0f };
-            GLfloat diffuse[] = { mat.diffuse[0], mat.diffuse[1], mat.diffuse[2], 1.0f };
-            GLfloat specular[] = { mat.specular[0], mat.specular[1], mat.specular[2], 1.0f };
-
-            glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-            glMaterialf(GL_FRONT, GL_SHININESS, mat.shininess);
-
-            // Также устанавливаем цвет для совместимости
-            glColor3f(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
-        }
-        else {
-            // Материал по умолчанию - желтый как оригинальный Пакман
-            GLfloat default_ambient[] = { 0.8f, 0.8f, 0.0f, 1.0f };
-            GLfloat default_diffuse[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-            GLfloat default_specular[] = { 1.0f, 1.0f, 0.8f, 1.0f };
-
-            glMaterialfv(GL_FRONT, GL_AMBIENT, default_ambient);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, default_diffuse);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, default_specular);
-            glMaterialf(GL_FRONT, GL_SHININESS, 50.0f);
-
-            glColor3f(1.0f, 1.0f, 0.0f);
-
-        }
-    }
-
-    void scale(float scaleFactor) {
-        for (size_t i = 0; i < vertices.size(); i++) {
-            vertices[i] *= scaleFactor;
-        }
     }
 };
 
@@ -439,9 +166,11 @@ const float CELL_SIZE_3D = 2.0f;
 
 Game game(M, N);
 
-// Глобальная переменная для модели Пакмана
-Model pacmanModel;
+// Глобальные переменные для моделей
+SimpleModel3DS pacmanModel;
 bool pacmanModelLoaded = false;
+SimpleModel3DS ghostModel;
+bool ghostModelLoaded = false;
 
 class Camera {
 public:
@@ -449,41 +178,38 @@ public:
     float centerX, centerY, centerZ;
     float upX, upY, upZ;
     bool followMode;
-    float angleY; // Угол поворота камеры вокруг вертикальной оси
+    float angleY;
 
     Camera() {
         followMode = true;
-        angleY = 0.0f; // Начальный угол
+        angleY = 0.0f;
         resetToMapView();
     }
 
     void resetToMapView() {
-        // Камера БЛИЖЕ к центру карты
         float baseX = M * CELL_SIZE_3D / 2.0f;
-        float baseZ = -15.0f; // ЕЩЕ БЛИЖЕ к карте (было -25.0f)
+        float baseZ = -15.0f;
 
-        // Применяем поворот вокруг вертикальной оси Y
-        eyeX = baseX + 15.0f * sin(angleY * M_PI / 180.0f); // Ближе (было 25.0f)
-        eyeY = 40.0f; // НИЖЕ над картой для лучшего обзора центра (было 60.0f)
-        eyeZ = baseZ + 15.0f * cos(angleY * M_PI / 180.0f); // Ближе (было 25.0f)
+        eyeX = baseX + 15.0f * sin(angleY * M_PI / 180.0f);
+        eyeY = 40.0f;
+        eyeZ = baseZ + 15.0f * cos(angleY * M_PI / 180.0f);
 
         centerX = M * CELL_SIZE_3D / 2.0f;
         centerY = 0.0f;
         centerZ = N * CELL_SIZE_3D / 2.0f;
 
-        upX = 0; upY = 1; upZ = 0; // Вертикальная ось
+        upX = 0; upY = 1; upZ = 0;
     }
 
     void followPacman(const Pacman& pacman) {
         if (!followMode) return;
 
         float pacmanX3D = pacman.getX() * CELL_SIZE_3D;
-        float pacmanZ3D = (N - pacman.getY()) * CELL_SIZE_3D; // ИНВЕРСИЯ Y
+        float pacmanZ3D = (N - pacman.getY()) * CELL_SIZE_3D;
 
-        // Камера следует за Пакманом - БЛИЖЕ к нему
-        eyeX = pacmanX3D + 12.0f * sin(angleY * M_PI / 180.0f); // Ближе (было 20.0f)
-        eyeY = 25.0f; // НИЖЕ над Пакманом (было 45.0f)
-        eyeZ = pacmanZ3D + 10.0f * cos(angleY * M_PI / 180.0f); // Ближе (было 15.0f)
+        eyeX = pacmanX3D + 12.0f * sin(angleY * M_PI / 180.0f);
+        eyeY = 25.0f;
+        eyeZ = pacmanZ3D + 10.0f * cos(angleY * M_PI / 180.0f);
 
         centerX = pacmanX3D;
         centerY = 0.0f;
@@ -506,13 +232,36 @@ public:
 
 Camera camera;
 
+// Класс для сохранения и восстановления материалов
+class MaterialSaver {
+private:
+    GLfloat ambient[4];
+    GLfloat diffuse[4];
+    GLfloat specular[4];
+    GLfloat shininess;
+
+public:
+    MaterialSaver() {
+        glGetMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+        glGetMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+        glGetMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+        glGetMaterialfv(GL_FRONT, GL_SHININESS, &shininess);
+    }
+
+    ~MaterialSaver() {
+        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+        glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+    }
+};
 
 void setupLighting() {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+    /*glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);*/
 
     // Основной источник света (как солнце)
     GLfloat light0_position[] = { M * CELL_SIZE_3D / 2.0f, 30.0f, N * CELL_SIZE_3D / 2.0f, 1.0f };
@@ -555,16 +304,25 @@ void drawLightBulb(float x, float y, float z) {
     glPopMatrix();
 }
 
-// Рисуем полную 3D коробку (стены со всеми гранями)
+
+
 void drawCube(float x, float y, float z, float width, float height, float depth) {
+    MaterialSaver saver;
     float hw = width / 2;
     float hh = height / 2;
     float hd = depth / 2;
 
-    glBegin(GL_QUADS);
+    // Материал для стен
+    GLfloat wall_ambient[] = { 0.1f, 0.1f, 0.4f, 1.0f };
+    GLfloat wall_diffuse[] = { 0.2f, 0.2f, 0.8f, 1.0f };
+    GLfloat wall_specular[] = { 0.3f, 0.3f, 0.5f, 1.0f };
+    glMaterialfv(GL_FRONT, GL_AMBIENT, wall_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, wall_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, wall_specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, 10.0f);
 
+    glBegin(GL_QUADS);
     // Передняя грань
-    glColor3f(0.0f, 0.0f, 1.0f);
     glNormal3f(0.0f, 0.0f, 1.0f);
     glVertex3f(x - hw, y - hh, z + hd);
     glVertex3f(x + hw, y - hh, z + hd);
@@ -572,7 +330,6 @@ void drawCube(float x, float y, float z, float width, float height, float depth)
     glVertex3f(x - hw, y + hh, z + hd);
 
     // Задняя грань
-    glColor3f(0.0f, 0.0f, 0.8f);
     glNormal3f(0.0f, 0.0f, -1.0f);
     glVertex3f(x - hw, y - hh, z - hd);
     glVertex3f(x - hw, y + hh, z - hd);
@@ -580,15 +337,13 @@ void drawCube(float x, float y, float z, float width, float height, float depth)
     glVertex3f(x + hw, y - hh, z - hd);
 
     // Верхняя грань
-    glColor3f(0.3f, 0.3f, 1.0f);
     glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3f(x - hw, y + hh, z - hd);
     glVertex3f(x - hw, y + hh, z + hd);
     glVertex3f(x + hw, y + hh, z + hd);
     glVertex3f(x + hw, y + hh, z - hd);
 
-    // Нижняя грань (ДНО)
-    glColor3f(0.1f, 0.1f, 0.6f);
+    // Нижняя грань
     glNormal3f(0.0f, -1.0f, 0.0f);
     glVertex3f(x - hw, y - hh, z - hd);
     glVertex3f(x + hw, y - hh, z - hd);
@@ -596,7 +351,6 @@ void drawCube(float x, float y, float z, float width, float height, float depth)
     glVertex3f(x - hw, y - hh, z + hd);
 
     // Левая грань
-    glColor3f(0.2f, 0.2f, 0.9f);
     glNormal3f(-1.0f, 0.0f, 0.0f);
     glVertex3f(x - hw, y - hh, z - hd);
     glVertex3f(x - hw, y - hh, z + hd);
@@ -604,19 +358,22 @@ void drawCube(float x, float y, float z, float width, float height, float depth)
     glVertex3f(x - hw, y + hh, z - hd);
 
     // Правая грань
-    glColor3f(0.2f, 0.2f, 0.9f);
     glNormal3f(1.0f, 0.0f, 0.0f);
     glVertex3f(x + hw, y - hh, z - hd);
     glVertex3f(x + hw, y + hh, z - hd);
     glVertex3f(x + hw, y + hh, z + hd);
     glVertex3f(x + hw, y - hh, z + hd);
-
     glEnd();
 }
 
-// Рисуем пол (основание карты)
 void drawFloor() {
-    glColor3f(0.15f, 0.15f, 0.15f);
+    MaterialSaver saver;
+    GLfloat floor_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+    GLfloat floor_diffuse[] = { 0.15f, 0.15f, 0.15f, 1.0f };
+    glMaterialfv(GL_FRONT, GL_AMBIENT, floor_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, floor_diffuse);
+    glMaterialf(GL_FRONT, GL_SHININESS, 1.0f);
+
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3f(-5.0f, -1.0f, -5.0f);
@@ -626,7 +383,6 @@ void drawFloor() {
     glEnd();
 }
 
-// Улучшенная сфера с нормалями
 void drawSphere(float x, float y, float z, float radius, int segments) {
     glPushMatrix();
     glTranslatef(x, y, z);
@@ -634,40 +390,63 @@ void drawSphere(float x, float y, float z, float radius, int segments) {
     glPopMatrix();
 }
 
-// Улучшенный 3D Пакман с OBJ моделью и материалами
 void drawPacman3D(float x, float y, float z, float size, float mouthAngle, float rotationY) {
+    MaterialSaver saver; // Оставляем, чтобы сохранить состояние материала ДО отрисовки модели
     glPushMatrix();
     glTranslatef(x, y, z);
     glRotatef(rotationY, 0, 1, 0);
-    glScalef(size, size, size);
+
+   
 
     if (pacmanModelLoaded) {
         pacmanModel.render();
     }
     else {
-        // Fallback: стандартная сфера с желтым материалом
-        GLfloat yellow_ambient[] = { 0.8f, 0.8f, 0.0f, 1.0f };
+        // Fallback можно оставить и задать ему цвет здесь, если нужно
         GLfloat yellow_diffuse[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-        GLfloat yellow_specular[] = { 1.0f, 1.0f, 0.8f, 1.0f };
-
-        glMaterialfv(GL_FRONT, GL_AMBIENT, yellow_ambient);
         glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow_diffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, yellow_specular);
-        glMaterialf(GL_FRONT, GL_SHININESS, 50.0f);
-
-        glutSolidSphere(1.0f, 16, 16);
+        glutSolidSphere(size, 16, 16);
     }
 
     glPopMatrix();
 }
 
-// Улучшенный 3D Призрак
-void drawGhost3D(float x, float y, float z, float size, float r, float g, float b) {
+void drawGhost3D(float x, float y, float z, float size, GhostColor color, bool isVulnerable, int ghostIndex) {
+    MaterialSaver saver;
     glPushMatrix();
-    glTranslatef(x, size, z);
+    glTranslatef(x, y + size * 0.5f, z);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    float r, g, b;
+    if (isVulnerable) {
+        r = 0.0f; g = 0.0f; b = 1.0f; // Синий для уязвимых
+    }
+    else {
+        switch (color) {
+        case RED: r = 1.0f; g = 0.0f; b = 0.0f; break;
+        case PINK: r = 1.0f; g = 0.5f; b = 0.8f; break;
+        case CYAN: r = 0.0f; g = 1.0f; b = 1.0f; break;
+        case ORANGE: r = 1.0f; g = 0.5f; b = 0.0f; break;
+        default: r = 1.0f; g = 0.0f; b = 0.0f; break;
+        }
+    }
 
-    glColor3f(r, g, b);
-    glutSolidSphere(size, 12, 12);
+    // Материал для призрака
+    GLfloat ghost_ambient[] = { r * 0.4f, g * 0.4f, b * 0.4f, 1.0f };
+    GLfloat ghost_diffuse[] = { r, g, b, 1.0f };
+    GLfloat ghost_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ghost_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, ghost_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, ghost_specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, 32.0f);
+
+    if (ghostModelLoaded) {
+        ghostModel.render();
+    }
+    else {
+        // Fallback: стандартная сфера
+        glutSolidSphere(size, 16, 16);
+    }
 
     glPopMatrix();
 }
@@ -676,36 +455,48 @@ void drawMap3D() {
     const auto& map = game.getMap();
     const auto& grid = map.getGrid();
 
-    // Сначала рисуем пол
     drawFloor();
 
-    // Затем стены и объекты с ИНВЕРТИРОВАННОЙ Z координатой
     for (int i = 0; i < map.getHeight(); i++) {
         for (int j = 0; j < map.getWidth(); j++) {
             float x = j * CELL_SIZE_3D;
-            float z = (N - i) * CELL_SIZE_3D; // ИНВЕРСИЯ Y в Z
+            float z = (N - i) * CELL_SIZE_3D;
 
             switch (grid[i][j].type) {
             case WALL:
                 drawCube(x, 1.0f, z, 1.8f, 2.0f, 1.8f);
                 break;
-            case COIN:
-                glColor3f(1.0f, 1.0f, 0.0f);
+            case COIN: {
+                MaterialSaver saver;
+                GLfloat coin_ambient[] = { 0.8f, 0.8f, 0.0f, 1.0f };
+                GLfloat coin_diffuse[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+                GLfloat coin_specular[] = { 1.0f, 1.0f, 0.5f, 1.0f };
+                glMaterialfv(GL_FRONT, GL_AMBIENT, coin_ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, coin_diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, coin_specular);
+                glMaterialf(GL_FRONT, GL_SHININESS, 30.0f);
                 drawSphere(x, 0.5f, z, 0.2f, 8);
                 break;
-            case POWER_POINT:
-                glColor3f(1.0f, 1.0f, 1.0f);
+            }
+            case POWER_POINT: {
+                MaterialSaver saver;
+                GLfloat power_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+                GLfloat power_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+                GLfloat power_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+                glMaterialfv(GL_FRONT, GL_AMBIENT, power_ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, power_diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, power_specular);
+                glMaterialf(GL_FRONT, GL_SHININESS, 60.0f);
                 drawSphere(x, 0.8f, z, 0.3f, 12);
                 break;
+            }
             case EMPTY:
-                // Пустое пространство
                 break;
             }
         }
     }
 }
 
-// 2D текст поверх 3D сцены
 void drawText(float x, float y, const std::string& text) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -733,7 +524,6 @@ void drawText(float x, float y, const std::string& text) {
 void setupCamera() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // УВЕЛИЧИВАЕМ поле обзора чтобы видеть БОЛЬШЕ карты (было 60.0)
     gluPerspective(75.0, 1200.0 / 800.0, 0.1, 200.0);
 
     glMatrixMode(GL_MODELVIEW);
@@ -746,47 +536,30 @@ void setupCamera() {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Настраиваем освещение
     setupLighting();
-
-    // Настраиваем 3D камеру
     setupCamera();
 
-    // Рисуем видимые лампочки (источники света)
+    glEnable(GL_DEPTH_TEST);
+
     drawLightBulb(M * CELL_SIZE_3D / 2.0f, 30.0f, N * CELL_SIZE_3D / 2.0f);
     drawLightBulb(0.0f, 20.0f, 0.0f);
 
-    // Рендерим 3D мир
     drawMap3D();
 
-    // Рендерим Пакмана с ИНВЕРТИРОВАННОЙ Z координатой
     const auto& pacman = game.getPacman();
     float pacmanX = pacman.getX() * CELL_SIZE_3D;
-    float pacmanZ = (N - pacman.getY()) * CELL_SIZE_3D; // ИНВЕРСИЯ Y в Z
+    float pacmanZ = (N - pacman.getY()) * CELL_SIZE_3D;
 
     drawPacman3D(pacmanX, 1.0f, pacmanZ, 0.8f, pacman.getMouthAngle(), pacman.getRotationY());
 
-    // Рендерим призраков с ИНВЕРТИРОВАННОЙ Z координатой
+    int ghostIndex = 0;
     for (const auto& ghost : game.getGhosts()) {
         float ghostX = ghost.getX() * CELL_SIZE_3D;
-        float ghostZ = (N - ghost.getY()) * CELL_SIZE_3D; // ИНВЕРСИЯ Y в Z
-
-        float r = 1.0f, g = 0.0f, b = 0.0f;
-        switch (ghost.getColor()) {
-        case RED:r = 1.0f; g = 0.0f; b = 0.0f; break;
-        case PINK:r = 1.0f; g = 0.5f; b = 0.8f; break;
-        case CYAN:r = 0.0f; g = 1.0f; b = 1.0f; break;
-        case ORANGE: r = 1.0f; g = 0.5f; b = 0.0f; break;
-        }
-
-        if (ghost.isVulnerable()) {
-            r = 0.0f; g = 0.0f; b = 1.0f;
-        }
-
-        drawGhost3D(ghostX, 0, ghostZ, 0.7f, r, g, b);
+        float ghostZ = (N - ghost.getY()) * CELL_SIZE_3D;
+        drawGhost3D(ghostX, 0, ghostZ, 0.7f, ghost.getColor(), ghost.isVulnerable(), ghostIndex);
+        ghostIndex++;
     }
 
-    // 2D UI поверх всего
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
 
@@ -823,10 +596,9 @@ void update(int value) {
     game.update();
     camera.followPacman(game.getPacman());
     glutPostRedisplay();
-    glutTimerFunc(1, update, 0);
+    glutTimerFunc(10, update, 0);
 }
 
-// Улучшенное управление с переключением камеры
 void keyboard(unsigned char key, int x, int y) {
     if (key != 27 && key != 'r' && key != 'R' && key != 'c' && key != 'C' && key != 'q' && key != 'e') {
         game.startGame();
@@ -839,7 +611,7 @@ void keyboard(unsigned char key, int x, int y) {
     case 'd': case 'D': game.setPacmanDirection(1, 0); break;
     case ' ': if (game.isLevelComplete()) game.nextLevel(); break;
     case 'r': case 'R': game.restart(); break;
-    case 'c': case 'C': camera.toggleView(); break;
+   
     case 27: exit(0); break;
     }
 }
@@ -858,17 +630,28 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1200, 800);
-    glutCreateWindow("Pac-Man 3D with OBJ Model and Materials");
+    glutCreateWindow("Pac-Man 3D with Assimp Models");
 
-    // Загружаем модель Пакмана
-    pacmanModelLoaded = pacmanModel.loadFromFile("pacman.obj");
+    // Загружаем модели через Assimp
+    std::cout << "--- Loading Pacman Model ---" << std::endl;
+    pacmanModelLoaded = pacmanModel.loadFromFile("pacman.3ds");
     if (pacmanModelLoaded) {
-        pacmanModel.scale(1.0f);
-        std::cout << "Pacman OBJ model with materials loaded successfully!" << std::endl;
+        std::cout << "Pacman 3DS model loaded successfully!" << std::endl;
     }
     else {
-        std::cout << "Failed to load Pacman OBJ model, using default sphere." << std::endl;
+        std::cout << "Failed to load Pacman 3DS model, using default sphere." << std::endl;
     }
+
+    std::cout << "\n--- Loading Ghost Model ---" << std::endl;
+    ghostModelLoaded = ghostModel.loadFromFile("ghost.3ds");
+    if (ghostModelLoaded) {
+        std::cout << "Ghost 3DS model loaded successfully!" << std::endl;
+    }
+    else {
+        std::cout << "Failed to load Ghost 3DS model, using default sphere." << std::endl;
+    }
+
+    std::cout << "\n---------------------------\n" << std::endl;
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
@@ -881,7 +664,7 @@ int main(int argc, char** argv) {
     glutSpecialFunc(specialKeys);
     glutTimerFunc(10, update, 0);
 
-    std::cout << "Pac-Man 3D with OBJ Model and Materials Started!" << std::endl;
+    std::cout << "Pac-Man 3D with Assimp Models Started!" << std::endl;
     std::cout << "Move with WASD or Arrow Keys" << std::endl;
     std::cout << "Press 'R' to restart game" << std::endl;
     std::cout << "Press 'ESC' to exit" << std::endl;

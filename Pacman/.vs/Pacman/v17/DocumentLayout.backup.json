@@ -54,8 +54,7 @@
               "ViewState": "AgIAAFYAAAAAAAAAAAAqwGEAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-10-01T14:47:22.317Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -65,7 +64,7 @@
               "RelativeDocumentMoniker": "Pacman\\main.cpp",
               "ToolTip": "D:\\remote git\\Pac-man_OpenGL\\Pacman\\Pacman\\main.cpp",
               "RelativeToolTip": "Pacman\\main.cpp",
-              "ViewState": "AgIAACQDAAAAAAAAAAAUwDkDAAATAAAAAAAAAA==",
+              "ViewState": "AgIAAFUCAAAAAAAAAAAUwGUCAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-10-01T14:46:33.404Z",
               "IsPinned": true,
@@ -119,8 +118,7 @@
               "RelativeToolTip": "Pacman\\game.h",
               "ViewState": "AgIAAFQAAAAAAAAAAAAAAFsAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-01T14:46:47.061Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-01T14:46:47.061Z"
             },
             {
               "$type": "Document",

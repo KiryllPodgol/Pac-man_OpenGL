@@ -47,11 +47,18 @@ D:\remote git\Pac-man_OpenGL\Pacman\Pacman\ghost.h(216,29): warning C4244: 'argu
 D:\remote git\Pac-man_OpenGL\Pacman\Pacman\game.h(112,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'main.cpp')
   
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(229,59): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(230,59): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(231,59): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(466,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(468,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(484,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(486,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(193,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(195,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(210,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\remote git\Pac-man_OpenGL\Pacman\Pacman\main.cpp(212,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Pacman.vcxproj -> D:\remote git\Pac-man_OpenGL\Pacman\x64\Debug\Pacman.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  C:\dev\vcpkg\installed\x64-windows\bin\assimp-vc143-mt.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\draco.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\kubazip.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\minizip.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\poly2tri.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\pugixml.dll
+  C:\dev\vcpkg\installed\x64-windows\bin\zlib1.dll
+  7 File(s) copied
