@@ -40,13 +40,13 @@ aiVector3D transformVector(const aiMatrix4x4& matrix, const aiVector3D& vector) 
     return result;
 }
 
-// Упрощенный класс для загрузки 3D моделей с использованием Assimp
+// Упрощенный класс для загрузки 3D моделей 
 class SimpleModel3DS {
 private:
     const aiScene* scene;
     bool loaded;
     float scaleFactor;
-    Assimp::Importer importer; // Импортер живет вместе с объектом
+    Assimp::Importer importer; 
 
 public:
     SimpleModel3DS() : scene(nullptr), loaded(false), scaleFactor(1.0f) {}
@@ -135,7 +135,7 @@ public:
 
 private:
     void calculateSimpleScale() {
-        // Простое вычисление масштаба (оставлено без изменений)
+        // Простое вычисление масштаба
         if (scene->mNumMeshes > 0) {
             const aiMesh* mesh = scene->mMeshes[0];
             float maxSize = 0.0f;
@@ -154,7 +154,7 @@ private:
     }
 
     void renderSimpleMesh(const aiMesh* mesh) const {
-        // Рендерим треугольники (оставлено без изменений)
+        // Рендерим треугольники 
         glBegin(GL_TRIANGLES);
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
             const aiFace& face = mesh->mFaces[i];
@@ -278,8 +278,7 @@ void setupLighting() {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
-    /*glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);*/
+  
 
     // Основной источник света (как солнце)
     GLfloat light0_position[] = { M * CELL_SIZE_3D / 2.0f, 30.0f, N * CELL_SIZE_3D / 2.0f, 1.0f };
@@ -308,17 +307,14 @@ void setupLighting() {
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 }
 
-// Рисуем видимую лампочку (источник света)
+//  источник света
 void drawLightBulb(float x, float y, float z) {
     glPushMatrix();
     glTranslatef(x, y, z);
-
-    // Временно отключаем освещение для самой лампочки
     glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 1.0f, 0.8f); // Светло-желтый
+    glColor3f(1.0f, 1.0f, 0.8f); 
     glutSolidSphere(0.5f, 16, 16);
     glEnable(GL_LIGHTING);
-
     glPopMatrix();
 }
 
@@ -409,7 +405,7 @@ void drawSphere(float x, float y, float z, float radius, int segments) {
 }
 
 void drawPacman3D(float x, float y, float z, float size, float mouthAngle, float rotationY) {
-    MaterialSaver saver; // Оставляем, чтобы сохранить состояние материала ДО отрисовки модели
+    MaterialSaver saver; 
     glPushMatrix();
     glTranslatef(x, y, z);
     glRotatef(rotationY, 0, 1, 0);
@@ -420,7 +416,7 @@ void drawPacman3D(float x, float y, float z, float size, float mouthAngle, float
         pacmanModel.render();
     }
     else {
-        // Fallback можно оставить и задать ему цвет здесь, если нужно
+        // Fallback 
         GLfloat yellow_diffuse[] = { 1.0f, 1.0f, 0.0f, 1.0f };
         glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow_diffuse);
         glutSolidSphere(size, 16, 16);
@@ -452,17 +448,16 @@ void drawGhost3D(float x, float y, float z, float size, GhostColor color, bool i
     
 
     if (ghostModelLoaded) {
-        // Создаем массив с цветом для передачи в render
+      
         GLfloat tintColor[] = { r, g, b, 1.0f };
-        // Вызываем render с этим цветом
-        ghostModel.render(tintColor); // <-- Теперь передаем цвет сюда
+        
+        ghostModel.render(tintColor); 
     }
     else {
-        // Fallback: здесь можно установить цвет для сферы
+        // Fallback: цвет для сферы
         GLfloat fallback_color[] = { r, g, b, 1.0f };
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fallback_color);
-        // Чтобы Fallback выглядел как серебристый призрак (как раньше), 
-        // нужно добавить specular и shininess
+        
         GLfloat ghost_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ghost_specular);
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
@@ -586,7 +581,7 @@ void display() {
     drawText(10, 750, "SCORE: " + std::to_string(game.getScore()));
     drawText(500, 750, "HIGH SCORE: " + std::to_string(game.getHighScore()));
     drawText(1000, 750, "LEVEL: " + std::to_string(game.getLevel()));
-    drawText(10, 730, "Press 'C' to toggle camera");
+   
 
     if (!game.isGameStarted()) {
         drawText(550, 400, "READY!");
@@ -631,7 +626,6 @@ void keyboard(unsigned char key, int x, int y) {
     case 'd': case 'D': game.setPacmanDirection(1, 0); break;
     case ' ': if (game.isLevelComplete()) game.nextLevel(); break;
     case 'r': case 'R': game.restart(); break;
-   
     case 27: exit(0); break;
     }
 }

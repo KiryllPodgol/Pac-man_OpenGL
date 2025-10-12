@@ -176,7 +176,7 @@ public:
     }
 
     void createPowerPoints() {
-        // Размещаем POWER_POINT в четырех углах карты (как в оригинальном Pac-Man)
+        // Размещаем POWER_POINT  углах карты
         grid[1][1].type = POWER_POINT;                    // Левый верхний угол
         grid[1][width - 2].type = POWER_POINT;            // Правый верхний угол
         grid[height - 2][1].type = POWER_POINT;           // Левый нижний угол

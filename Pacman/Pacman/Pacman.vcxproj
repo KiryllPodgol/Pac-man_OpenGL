@@ -174,7 +174,6 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="gameMap.h" />
     <ClInclude Include="ghost.h" />
-    <ClInclude Include="model.h" />
     <ClInclude Include="pacman.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
